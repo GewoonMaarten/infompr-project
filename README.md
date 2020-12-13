@@ -1,6 +1,14 @@
 # INFOMPR Project
 
-### Config file structure
+## Links
+* [Fakeddit Github](https://github.com/entitize/Fakeddit)
+
+Dataset:
+* [Text + metadata](https://drive.google.com/drive/folders/1jU7qgDqU1je9Y0PMKJ_f31yXRo5uWGFm?usp=sharing)
+* [Images](https://drive.google.com/file/d/1cjY6HsHaSZuLVHywIxD5xQqng33J5S2b/view?usp=sharing)
+* [Comments](https://drive.google.com/drive/folders/150sL4SNi5zFK8nmllv5prWbn0LyvLzvo?usp=sharing)
+
+## Config file structure
 The config file is used to store the paths to the datasets.
 It has the following structure:
 ```json
