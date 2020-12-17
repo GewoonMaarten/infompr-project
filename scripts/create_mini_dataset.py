@@ -4,7 +4,7 @@ import argparse
 import json
 import os
 import pandas as pd
-import shutil
+import zipfile
 
 def create_dir(name):
   root = Path(os.path.realpath(__file__)).parent.parent
@@ -19,12 +19,17 @@ def get_image_paths(path):
 def create_mini_dataset(name, path, sample_size, image_paths, dest):
   df = pd.read_csv(path, sep='\t', header=0)
   df = df.sample(n=sample_size, replace=False)
+  zipFile = zipfile.ZipFile(Path('dist', f'mini_dataset_{name}.zip'), 'w')
 
   for i in tqdm(range(sample_size), unit='Images'):
     stem = df.iloc[i].id
-    shutil.copyfile(image_paths[stem], Path(dest, 'images', f'{stem}.jpg'))
+    zipFile.write(image_paths[stem], arcname=f'images/{stem}.jpg')
 
   df.to_csv(Path(dest, f'mini_dataset_{name}.tsv'), sep='\t', index=False)
+  zipFile.write(
+    Path(dest, f'mini_dataset_{name}.tsv'), 
+    arcname=f'mini_dataset_{name}.tsv')
+  zipFile.close()
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
@@ -34,11 +39,6 @@ if __name__ == "__main__":
     required=True,
     type=int,
     help='number of samples for the mini dataset')
-  parser.add_argument(
-    '-z',
-    dest='zip',
-    action='store_true',
-    help='should the minidataset be zipped or not')
   parser.add_argument(
     '-d',
     dest='dataset',
@@ -53,7 +53,6 @@ if __name__ == "__main__":
     obj = json.loads(config)
   
   dest = create_dir(f'dist/mini_dataset_{args.dataset}')
-  create_dir(f'dist/mini_dataset_{args.dataset}/images')
 
   image_paths = get_image_paths(obj['public_dataset']['images_dir'])
   create_mini_dataset(
@@ -62,6 +61,3 @@ if __name__ == "__main__":
     args.samples,
     image_paths,
     dest)
-  
-  if(args.zip):
-    shutil.make_archive(dest, 'zip', dest)
