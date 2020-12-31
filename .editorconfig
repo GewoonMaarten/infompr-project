@@ -1,0 +1,11 @@
+# EditorConfig: https://EditorConfig.org
+# For VSCode install EditorConfig plugin
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[*.py]
+indent_style = space
+indent_size = 4
