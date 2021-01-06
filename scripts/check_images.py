@@ -1,7 +1,16 @@
 from pathlib import Path
 from tqdm import tqdm
-import json
 import pandas as pd
+
+try:
+    from utils.config import (
+        dataset_test_path,
+        dataset_train_path,
+        dataset_validate_path,
+        dataset_images_path)
+except ImportError:
+    print('Run script as: python -m script.check_images\n')
+    raise
 
 
 def check_tsv(path, image_ids):
@@ -21,16 +30,7 @@ def get_image_ids(path):
 
 
 if __name__ == "__main__":
-    obj = None
-    with open('config.json', 'r') as f:
-        config = f.read()
-        obj = json.loads(config)
+    image_ids = get_image_ids(dataset_images_path)
 
-    image_ids = get_image_ids(obj['public_dataset']['images_dir'])
-
-    for p in [
-        obj['public_dataset']['multimodal_test'],
-        obj['public_dataset']['multimodal_train'],
-        obj['public_dataset']['multimodal_validate']
-    ]:
+    for p in [dataset_test_path, dataset_train_path, dataset_validate_path]:
         check_tsv(p, image_ids)
