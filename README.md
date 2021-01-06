@@ -9,8 +9,9 @@ Dataset:
 * [Comments](https://drive.google.com/drive/folders/150sL4SNi5zFK8nmllv5prWbn0LyvLzvo?usp=sharing)
 
 ## Config file structure
-The config file is used to store the paths to the datasets.
-It has the following structure:
+The config file is used to store the paths to the datasets. 
+It needs to be called `config.json` and needs to be stored in the root of the project.
+It needs to have the following structure:
 ```json
 {
   "public_dataset": 
@@ -22,3 +23,4 @@ It has the following structure:
   }
 }
 ```
+This file is then loaded in `utils.config.py` to be made available for the whole project.
