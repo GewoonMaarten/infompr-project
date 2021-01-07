@@ -11,7 +11,7 @@ Dataset:
 ## Config file structure
 The config file is used to store the paths to the datasets. 
 It needs to be called `config.json` and needs to be stored in the root of the project.
-It needs to have the following structure:
+It needs to have the following structure (keys with the `_` prefix are optional):
 ```json
 {
   "public_dataset": 
@@ -20,7 +20,8 @@ It needs to have the following structure:
     "multimodal_train": "path_to_multimodal_train.tsv",
     "multimodal_validate": "path_to_multimodal_validate.tsv",
     "images_dir": "path_to_public_image_set_dir"
-  }
+  },
+  "_teams_webhook_url": "webhook_url"
 }
 ```
 This file is then loaded in `utils.config.py` to be made available for the whole project.
