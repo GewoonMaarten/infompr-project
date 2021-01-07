@@ -49,6 +49,8 @@ class FakedditSequence(Sequence):
         self.image_size = image_size
         self.labels = f'{n_labels}_way_label'
 
+        self.on_epoch_end() # initial shuffle
+
     def __len__(self):
         """ Denotes the number of batches per epoch """
         return math.floor(len(self.df) / self.batch_size)
