@@ -62,7 +62,7 @@ class FakedditSequence(Sequence):
 
         return np.array([
             self._load_img(id) for id in df_slice.id]), \
-            self.df[self.labels].to_numpy()
+            df_slice[self.labels].to_numpy()
 
     def on_epoch_end(self):
         """ Shuffle df after each epoch """
