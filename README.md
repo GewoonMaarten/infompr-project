@@ -30,7 +30,7 @@ This file is then loaded in `utils.config.py` to be made available for the whole
 Below are some scripts that can help you with training of the models.
 They need to be executed from the root directory of the project.
 
-* `check_images.py` can be used to check if all images exist and can be loaded.
+* `scripts.check_images.py` can be used to check if all images exist and can be loaded.
   ```
   > python -m scripts.check_images
   usage: check_images.py [-h] [-t]
@@ -40,7 +40,7 @@ They need to be executed from the root directory of the project.
     -t          checks the images thoroughly by loading them
   ```
 
-* `create_mini_dataset.py` can be used to create a mini dataset from the larger one.
+* `scripts.create_mini_dataset.py` can be used to create a mini dataset from the larger one.
   ```
   > python -m scripts.create_mini_dataset
   usage: create_mini_dataset.py [-h] -n SAMPLES [-d {train,test,validate}]
