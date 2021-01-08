@@ -23,4 +23,4 @@ for layer in base_model.layers:
 
 model.compile(optimizer='adam', loss='binary_crossentropy')
 
-model.fit(train_seq, validation_data=validate_seq, vebose=2)
+model.fit(train_seq, validation_data=validate_seq)
