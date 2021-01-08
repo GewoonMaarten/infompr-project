@@ -1,7 +1,7 @@
 from pathlib import Path
+from PIL import Image
 from tqdm import tqdm
 import argparse
-import cv2
 import logging
 import pandas as pd
 
@@ -32,9 +32,10 @@ def check_tsv(path, image_ids, thorough):
             continue
 
         if thorough:
-            path = Path(dataset_images_path, f'{id}.jpg')
-            img = cv2.imread(str(path))
-            if img is None:
+            img_path = Path(dataset_images_path, f'{id}.jpg')
+            try:
+                Image.open(str(img_path))
+            except IOError:
                 imgs_not_loaded.append(id)
 
     if not imgs_not_found and not imgs_not_loaded:

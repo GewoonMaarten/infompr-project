@@ -1,7 +1,7 @@
-import pandas as pd
-import cv2
 from pathlib import Path
+from PIL import Image
 from tqdm import tqdm
+import pandas as pd
 
 try:
     from utils.config import (
@@ -22,12 +22,16 @@ def fix_dataset(path):
     for index, row in tqdm(df.iterrows(), total=len(df), unit='Images'):
         id = row['id']
         img_path = Path(dataset_images_path, f'{id}.jpg')
-        img = cv2.imread(str(img_path), cv2.IMREAD_REDUCED_GRAYSCALE_8)
-        if img is None:
+        try:
+            Image.open(str(img_path))
+        except IOError:
             indexes_to_drop.append(index)
 
     df = df.drop(indexes_to_drop)
     df.to_csv(path, sep='\t', index=False)
+
+    print(f'removed {len(indexes_to_drop)} images')
+
 
 if __name__ == '__main__':
     for path in [dataset_test_path, dataset_train_path, dataset_validate_path]:
