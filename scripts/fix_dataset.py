@@ -21,8 +21,8 @@ def fix_dataset(path):
     indexes_to_drop = []
     for index, row in tqdm(df.iterrows(), total=len(df), unit='Images'):
         id = row['id']
-        path = Path(dataset_images_path, f'{id}.jpg')
-        img = cv2.imread(str(path), cv2.IMREAD_REDUCED_GRAYSCALE_8)
+        img_path = Path(dataset_images_path, f'{id}.jpg')
+        img = cv2.imread(str(img_path), cv2.IMREAD_REDUCED_GRAYSCALE_8)
         if img is None:
             indexes_to_drop.append(index)
 
