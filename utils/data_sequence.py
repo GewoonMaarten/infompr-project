@@ -76,6 +76,5 @@ class FakedditSequence(Sequence):
         # resize with resampling using pixel area relation
         img = cv2.resize(img, self.image_size, interpolation=cv2.INTER_AREA)
         # flatten img array 3d -> 1d
-        img = img.flatten()
-
+        # img = img.flatten()
         return img
