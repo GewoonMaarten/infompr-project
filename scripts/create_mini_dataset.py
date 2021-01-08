@@ -3,7 +3,7 @@ from tqdm import tqdm
 import argparse
 import os
 import pandas as pd
-import zipfile
+import shutil
 
 try:
     from utils.config import (
@@ -23,25 +23,17 @@ def create_dir(name):
     return path
 
 
-def get_image_paths(path):
-    paths = Path(path).glob('*.jpg')
-    return {x.stem: x for x in paths}
-
-
-def create_mini_dataset(name, path, sample_size, image_paths, dest):
+def create_mini_dataset(name, path, sample_size, dest):
     df = pd.read_csv(path, sep='\t', header=0)
     df = df.sample(n=sample_size, replace=False)
-    zipFile = zipfile.ZipFile(Path('dist', f'mini_dataset_{name}.zip'), 'w')
 
-    for i in tqdm(range(sample_size), unit='Images'):
-        stem = df.iloc[i].id
-        zipFile.write(image_paths[stem], arcname=f'images/{stem}.jpg')
+    for _, row in tqdm(df.iterrows(), total=len(df), unit='Images'):
+        id = row['id']
+        img_src = Path(dataset_images_path, f'{id}.jpg')
+        img_dest = Path(dest, 'images', f'{id}.jpg')
+        shutil.copy(img_src, img_dest)
 
     df.to_csv(Path(dest, f'mini_dataset_{name}.tsv'), sep='\t', index=False)
-    zipFile.write(
-        Path(dest, f'mini_dataset_{name}.tsv'),
-        arcname=f'mini_dataset_{name}.tsv')
-    zipFile.close()
 
 
 if __name__ == "__main__":
@@ -60,9 +52,14 @@ if __name__ == "__main__":
         help='which dataset should be used to create the minidataset')
     args = parser.parse_args()
 
-    dest = create_dir(f'dist/mini_dataset_{args.dataset}')
+    print('!!!IMPORTANT!!!')
+    print('Before using this script makes sure that your dataset is clean!')
+    print('Run "python -m scripts.fix_dataset" if you have not done so already')
+    input("Press Enter to continue...")
 
-    image_paths = get_image_paths(dataset_images_path)
+    dest = create_dir('dist')
+    create_dir('dist/images')
+
     dataset_path = None
     if args.dataset == 'test':
         dataset_path = dataset_test_path
@@ -75,5 +72,4 @@ if __name__ == "__main__":
         args.dataset,
         dataset_path,
         args.samples,
-        image_paths,
         dest)
