@@ -50,3 +50,8 @@ They need to be executed from the root directory of the project.
     -n SAMPLES               number of samples for the mini dataset
     -d {train,test,validate} which dataset should be used to create the minidataset
   ```
+
+* `scripts.fix_dataset.py` can be used to remove invalid images from the dataset.
+  ```
+  > python -m scripts.fix_dataset
+  ```
