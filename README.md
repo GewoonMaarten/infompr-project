@@ -25,3 +25,28 @@ It needs to have the following structure (keys with the `_` prefix are optional)
 }
 ```
 This file is then loaded in `utils.config.py` to be made available for the whole project.
+
+## Scripts
+Below are some scripts that can help you with training of the models.
+They need to be executed from the root directory of the project.
+
+* `check_images.py` can be used to check if all images exist and can be loaded.
+  ```
+  > python -m scripts.check_images
+  usage: check_images.py [-h] [-t]
+
+  optional arguments:
+    -h, --help  show this help message and exit
+    -t          checks the images thoroughly by loading them
+  ```
+
+* `create_mini_dataset.py` can be used to create a mini dataset from the larger one.
+  ```
+  > python -m scripts.create_mini_dataset
+  usage: create_mini_dataset.py [-h] -n SAMPLES [-d {train,test,validate}]
+
+  optional arguments:
+    -h, --help               show this help message and exit
+    -n SAMPLES               number of samples for the mini dataset
+    -d {train,test,validate} which dataset should be used to create the minidataset
+  ```
