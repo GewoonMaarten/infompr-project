@@ -1,9 +1,9 @@
 from pathlib import Path
 from tqdm import tqdm
 import argparse
+import cv2
 import os
 import pandas as pd
-import zipfile
 
 try:
     from utils.config import (
@@ -12,7 +12,7 @@ try:
         dataset_validate_path,
         dataset_images_path)
 except ImportError:
-    print('Run script as: python -m script.check_images\n')
+    print('Run script as: python -m scripts.check_images\n')
     raise
 
 
@@ -23,28 +23,37 @@ def create_dir(name):
     return path
 
 
-def get_image_paths(path):
-    paths = Path(path).glob('*.jpg')
-    return {x.stem: x for x in paths}
 
-
-def create_mini_dataset(name, path, sample_size, image_paths, dest):
+def create_mini_dataset(name, path, sample_size, dest):
     df = pd.read_csv(path, sep='\t', header=0)
-    df = df.sample(n=sample_size, replace=False)
-    zipFile = zipfile.ZipFile(Path('dist', f'mini_dataset_{name}.zip'), 'w')
 
-    for i in tqdm(range(sample_size), unit='Images'):
-        stem = df.iloc[i].id
-        zipFile.write(image_paths[stem], arcname=f'images/{stem}.jpg')
+    pbar = tqdm(total=sample_size, unit='Images')
+    samples = set()
+    while sample_size > 0:
+        sample = df.sample()
+        index = sample.index[0]
+        if index in samples:
+            continue
 
+        id = sample.iloc[0].id
+
+        img_src = Path(dataset_images_path, f'{id}.jpg')
+        img_dest = Path(dest, 'images', f'{id}.jpg')
+        img = cv2.imread(str(img_src))
+        if img is None:
+            continue
+        cv2.imwrite(str(img_dest), img)
+
+        samples.add(index)
+        sample_size -= 1
+        pbar.update()
+    pbar.close()
+
+    df = df[df.index.isin(samples)]
     df.to_csv(Path(dest, f'mini_dataset_{name}.tsv'), sep='\t', index=False)
-    zipFile.write(
-        Path(dest, f'mini_dataset_{name}.tsv'),
-        arcname=f'mini_dataset_{name}.tsv')
-    zipFile.close()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-n',
@@ -60,9 +69,9 @@ if __name__ == "__main__":
         help='which dataset should be used to create the minidataset')
     args = parser.parse_args()
 
-    dest = create_dir(f'dist/mini_dataset_{args.dataset}')
+    dest = create_dir('dist')
+    create_dir('dist/images')
 
-    image_paths = get_image_paths(dataset_images_path)
     dataset_path = None
     if args.dataset == 'test':
         dataset_path = dataset_test_path
@@ -75,5 +84,4 @@ if __name__ == "__main__":
         args.dataset,
         dataset_path,
         args.samples,
-        image_paths,
         dest)
