@@ -5,6 +5,7 @@ from tensorflow.keras.models import Model
 
 batch_size = 64
 image_size = (299, 299)
+epochs = 3
 train_seq = FakedditSequence(batch_size, image_size, mode='train')
 test_seq = FakedditSequence(batch_size, image_size, mode='test')
 validate_seq = FakedditSequence(batch_size, image_size, mode='validate')
@@ -23,4 +24,7 @@ for layer in base_model.layers:
 
 model.compile(optimizer='adam', loss='binary_crossentropy')
 
-model.fit(train_seq, validation_data=validate_seq)
+model.fit(train_seq, validation_data=validate_seq, epochs=epochs)
+score = model.evaluate(test_seq)
+
+print(f'Test loss: {score}')
