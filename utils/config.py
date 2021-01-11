@@ -15,6 +15,15 @@ dataset_train_path = config['public_dataset']['multimodal_train']
 dataset_validate_path = config['public_dataset']['multimodal_validate']
 dataset_images_path = config['public_dataset']['images_dir']
 
+training_epochs = config['epochs']
+training_batch_size = config['batch_size']
+
+text_max_length = config['text_config']['max_length']
+
+img_width = config['img_config']['img_width']
+img_height = config['img_config']['img_height']
+img_size = (img_width, img_height)
+
 # Optional config
 try:
     teams_webhook_url = config['_teams_webhook_url']

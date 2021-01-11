@@ -21,6 +21,15 @@ It needs to have the following structure (keys with the `_` prefix are optional)
     "multimodal_validate": "path_to_multimodal_validate.tsv",
     "images_dir": "path_to_public_image_set_dir"
   },
+  "epochs": 0,
+  "batch_size": 0,
+  "text_config": {
+    "max_length": 0
+  },
+  "img_config": {
+    "img_width": 0,
+    "img_height": 0
+  },
   "_teams_webhook_url": "webhook_url"
 }
 ```

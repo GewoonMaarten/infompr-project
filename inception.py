@@ -3,12 +3,15 @@ from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
 
-batch_size = 64
-image_size = (299, 299)
-epochs = 3
-train_seq = FakedditSequence(batch_size, image_size, mode='train')
-test_seq = FakedditSequence(batch_size, image_size, mode='test')
-validate_seq = FakedditSequence(batch_size, image_size, mode='validate')
+from utils.config import (
+    training_batch_size,
+    training_epochs,
+    img_size
+)
+
+train_seq = FakedditSequence(training_batch_size, img_size, mode='train')
+test_seq = FakedditSequence(training_batch_size, img_size, mode='test')
+validate_seq = FakedditSequence(training_batch_size, img_size, mode='validate')
 
 
 base_model = InceptionV3(weights='imagenet', include_top=False)
@@ -24,7 +27,7 @@ for layer in base_model.layers:
 
 model.compile(optimizer='adam', loss='binary_crossentropy')
 
-model.fit(train_seq, validation_data=validate_seq, epochs=epochs)
+model.fit(train_seq, validation_data=validate_seq, epochs=training_epochs)
 score = model.evaluate(test_seq)
 
 print(f'Test loss: {score}')
