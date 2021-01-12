@@ -1,9 +1,10 @@
-import pandas as pd
-import math
-import cv2
+from enum import Enum, auto
 from pathlib import Path
+from tensorflow.keras.utils import Sequence, to_categorical
+import cv2
+import math
 import numpy as np
-from tensorflow.keras.utils import Sequence
+import pandas as pd
 
 from utils.config import (
     dataset_test_path,
@@ -12,30 +13,32 @@ from utils.config import (
     dataset_images_path)
 
 
+class ModeType(Enum):
+    TRAIN = auto()
+    TEST = auto()
+    VALIDATE = auto()
+
+
 class FakedditSequence(Sequence):
     """ Sequence for loading data and training models """
 
-    def __init__(self, batch_size, image_size, mode='train', n_labels=2):
+    def __init__(self, batch_size, image_size, mode=ModeType.TRAIN, n_labels=2):
         """ Creates an instance of FakedditSequence
 
         Parameters:
         -----------
             batch_size (int): size of the batch to return with `__getitem__()`
             image_size ((int, int)): size of the image
-            mode (str): for which purpose is the sequence. This value determines
-            from which dataset to load the samples. Can have the following
-            values:
-                * 'train'
-                * 'test'
-                * 'validate'
+            mode (ModeType): for which purpose is the sequence. This value determines
+            from which dataset to load the samples.
             n_labels (int): number of labels to train on. Can be 2, 3 or 6.
         """
         df_path = None
-        if mode == 'train':
+        if mode == ModeType.TRAIN:
             df_path = dataset_train_path
-        elif mode == 'test':
+        elif mode == ModeType.TEST:
             df_path = dataset_test_path
-        elif mode == 'validate':
+        elif mode == ModeType.VALIDATE:
             df_path = dataset_validate_path
         else:
             raise ValueError(
@@ -47,9 +50,10 @@ class FakedditSequence(Sequence):
         self.df = pd.read_csv(df_path, sep='\t', header=0)
         self.batch_size = batch_size
         self.image_size = image_size
+        self.n_labels = n_labels
         self.labels = f'{n_labels}_way_label'
 
-        self.on_epoch_end() # initial shuffle
+        self.on_epoch_end()  # initial shuffle
 
     def __len__(self):
         """ Denotes the number of batches per epoch """
@@ -61,14 +65,14 @@ class FakedditSequence(Sequence):
                                 (index+1) * self.batch_size]
 
         return np.array([
-            self._load_img(id) for id in df_slice.id]), \
-            df_slice[self.labels].to_numpy()
+            self.__load_img(id) for id in df_slice.id]), \
+            to_categorical(df_slice[self.labels], self.n_labels)
 
     def on_epoch_end(self):
         """ Shuffle df after each epoch """
         self.df = self.df.sample(frac=1).reset_index(drop=True)
 
-    def _load_img(self, id):
+    def __load_img(self, id):
         """ Load image as 1d array """
         path = Path(dataset_images_path, f'{id}.jpg')
         # load in color mode as (x,y,3) array
