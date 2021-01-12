@@ -6,14 +6,29 @@ from utils.config import (
     img_size
 )
 
-n_labels = 6
-train_seq = FakedditSequence(training_batch_size, img_size, mode=ModeType.TRAIN, n_labels=n_labels)
-test_seq = FakedditSequence(training_batch_size, img_size, mode=ModeType.TEST, n_labels=n_labels)
-validate_seq = FakedditSequence(training_batch_size, img_size, mode=ModeType.VALIDATE, n_labels=n_labels)
+n_labels = 2
+
+train_seq = FakedditSequence(
+    training_batch_size, 
+    img_size, 
+    mode=ModeType.TRAIN, 
+    n_labels=n_labels)
+
+test_seq = FakedditSequence(
+    training_batch_size,
+    img_size, 
+    mode=ModeType.TEST,
+     n_labels=n_labels)
+    
+validate_seq = FakedditSequence(
+    training_batch_size, 
+    img_size, 
+    mode=ModeType.VALIDATE, 
+    n_labels=n_labels)
 
 model = build_model(ModelType.INCEPTION, n_labels=n_labels)
 
-model.fit(train_seq, validation_data=validate_seq, epochs=training_epochs)
+history = model.fit(train_seq, validation_data=validate_seq, epochs=training_epochs)
 score = model.evaluate(test_seq)
 
 print(f'Test loss: {score}')
