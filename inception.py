@@ -32,3 +32,5 @@ history = model.fit(train_seq, validation_data=validate_seq, epochs=training_epo
 score = model.evaluate(test_seq)
 
 print(f'Test loss: {score}')
+
+# model.save("models/inception.hdf5")

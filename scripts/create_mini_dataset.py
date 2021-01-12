@@ -4,6 +4,8 @@ import argparse
 import os
 import pandas as pd
 import shutil
+import urllib.request
+from PIL import Image
 
 try:
     from utils.config import (
@@ -12,7 +14,7 @@ try:
         dataset_validate_path,
         dataset_images_path)
 except ImportError:
-    print('Run script as: python -m script.check_images\n')
+    print('Run script as: python -m scripts.create_mini_dataset\n')
     raise
 
 
@@ -25,12 +27,31 @@ def create_dir(name):
 
 def create_mini_dataset(name, path, sample_size, dest):
     df = pd.read_csv(path, sep='\t', header=0)
+    # TODO Tom maybe we can find a way to retreive more samples if images are corrupt/not found
     df = df.sample(n=sample_size, replace=False)
+
+    # If the images folder does not exist
+    # we create it as a cache folder
+    if not Path(dataset_images_path).exists():
+        create_dir(dataset_images_path)
 
     for _, row in tqdm(df.iterrows(), total=len(df), unit='Images'):
         id = row['id']
         img_src = Path(dataset_images_path, f'{id}.jpg')
         img_dest = Path(dest, 'images', f'{id}.jpg')
+
+        # try download & open the image
+        if not img_src.exists():
+            try:
+                urllib.request.urlretrieve(row['image_url'], img_src)
+                try:
+                    Image.open(str(img_src))
+                except IOError:
+                    img_src.unlink()
+                    continue
+            except urllib.error.HTTPError:
+                continue
+
         shutil.copy(img_src, img_dest)
 
     df.to_csv(Path(dest, f'mini_dataset_{name}.tsv'), sep='\t', index=False)
