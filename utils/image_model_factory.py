@@ -17,7 +17,7 @@ def build_model(model_type, n_labels):
     if model_type == ModelType.INCEPTION:
         model = __build_inception(n_labels)
     elif model_type == ModelType.INCEPTIONRESNET:
-        model = __build_inceptionresnet
+        model = __build_inceptionresnet(n_labels)
     elif model_type == ModelType.EFFIECENTNET:
         model = __build_effiecentnet(n_labels)
     else:
