@@ -9,6 +9,7 @@ from pathlib import Path
 
 from utils.config import img_height, img_width
 
+
 class ModelType(Enum):
     INCEPTION = auto()
     INCEPTIONRESNET = auto()
@@ -97,7 +98,7 @@ class ModelBuilder():
         self.n_lables = n_labels
         self.model = None
         self.base_model = None
-        
+
         if model_type == ModelType.INCEPTION:
             self.__build_inception(n_labels)
         elif model_type == ModelType.INCEPTIONRESNET:
@@ -107,11 +108,26 @@ class ModelBuilder():
         else:
             raise ValueError('Not a valid value for model')
 
+    def compile_for_transfer_learning(self):
+        self.base_model.trainable = False
+        loss = 'binary_crossentropy' if self.n_lables == 2 else 'categorical_crossentropy'
+        self.model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
+
+    def compile_for_fine_tuning(self):
+        for layer in self.model.layers[:249]:
+            layer.trainable = False
+        for layer in self.model.layers[249:]:
+            layer.trainable = True
+        # self.base_model.trainable = False
+        loss = 'binary_crossentropy' if self.n_lables == 2 else 'categorical_crossentropy'
+        self.model.compile(optimizer=SGD(lr=0.0001, momentum=0.9),
+                           loss=loss,
+                           metrics=['accuracy'])
 
     def __build_inception(self, n_labels):
         input_tensor = Input(shape=(img_width, img_height, 3))
-        self.base_model = InceptionV3(input_tensor=input_tensor, 
-                                      weights='imagenet', 
+        self.base_model = InceptionV3(input_tensor=input_tensor,
+                                      weights='imagenet',
                                       include_top=False)
 
         x = self.base_model.output
@@ -121,13 +137,13 @@ class ModelBuilder():
         predictions = Dense(n_labels, activation='softmax')(x)
 
         self.model = Model(inputs=self.base_model.input,
-                           outputs=predictions, 
+                           outputs=predictions,
                            name="Inception")
 
     def __build_inceptionresnet(self, n_labels):
         input_tensor = Input(shape=(img_width, img_height, 3))
-        self.base_model = InceptionResNetV2(input_tensor=input_tensor, 
-                                            weights='imagenet', 
+        self.base_model = InceptionResNetV2(input_tensor=input_tensor,
+                                            weights='imagenet',
                                             include_top=False)
 
         x = self.base_model.output
@@ -137,7 +153,7 @@ class ModelBuilder():
         predictions = Dense(n_labels, activation='softmax')(x)
 
         self.model = Model(inputs=self.base_model.input,
-                           outputs=predictions, 
+                           outputs=predictions,
                            name="Inception-ResNet")
 
     def __build_effiecentnet(self, n_labels):
@@ -151,7 +167,7 @@ class ModelBuilder():
 
         input_tensor = Input(shape=(img_width, img_height, 3))
         self.base_model = EfficientNetB7(input_tensor=input_tensor,
-                                         weights=str(weights_path), 
+                                         weights=str(weights_path),
                                          include_top=False)
 
         x = self.base_model.output
@@ -162,8 +178,9 @@ class ModelBuilder():
         predictions = Dense(n_labels, activation="softmax")(x)
 
         self.model = Model(inputs=self.base_model.input,
-                           outputs=predictions, 
+                           outputs=predictions,
                            name="EfficientNet")
+<<<<<<< HEAD
 
     def compile_for_transfer_learning(self):
         self.base_model.trainable = False
@@ -185,3 +202,5 @@ class ModelBuilder():
                            loss=loss, 
                            metrics=['accuracy'])
 >>>>>>> a0c5edc (Add fine tuning to image model factory)
+=======
+>>>>>>> cbea5be (Add data analysis notebook)
