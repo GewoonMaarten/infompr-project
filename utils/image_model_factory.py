@@ -53,6 +53,9 @@ def __build_inceptionresnet(n_labels, path_to_weights=None):
 
     predictions = Dense(n_labels, activation='softmax')(x)
 
+    for layer in base_model.layers:
+        layer.trainable = False
+
     return Model(inputs=base_model.input, outputs=predictions, name="Inception-ResNet")
 
 
@@ -74,9 +77,13 @@ def __build_effiecentnet(n_labels, path_to_weights=None):
 
     predictions = Dense(n_labels, activation="softmax")(x)
 
+    for layer in base_model.layers:
+        layer.trainable = False
+
     return Model(inputs=base_model.input, outputs=predictions, name="EfficientNet")
 
 
 def __compile(model, is_binary):
+
     loss = 'binary_crossentropy' if is_binary else 'categorical_crossentropy'
     model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
