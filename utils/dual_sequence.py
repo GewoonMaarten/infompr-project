@@ -72,10 +72,9 @@ class FakedditDualSequence(Sequence):
                                 (index+1) * self.batch_size]
 
         images = np.array([self.__load_img(id) for id in df_slice.id])
-        titles = np.array([convert_example_to_feature(title) for title in df_slice['clean_title']])
-        print(titles)
-        labels = to_categorical(df_slice[self.labels], self.n_labels)
-        # labels = np.array(df_slice[self.labels]).astype(np.float32)
+        titles = np.array([convert_example_to_feature(title)['input_ids'] for title in df_slice['clean_title']])
+        # labels = to_categorical(df_slice[self.labels], self.n_labels)
+        labels = np.array(df_slice[self.labels]).astype(np.float32)
         return [[images, titles]], labels
 
     def on_epoch_end(self):
