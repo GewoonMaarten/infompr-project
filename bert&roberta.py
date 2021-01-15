@@ -21,7 +21,6 @@ def read_data(data, n_labels):
     y_train = df[n_labels]
     return df, X_train, y_train
 
-
 df_train, X_train, y_train = read_data(dataset_train_path, n_labels= "2_way_label")
 df_val, X_val, y_val = read_data(dataset_validate_path, n_labels= "2_way_label")
 df_test, X_test, y_test = read_data(dataset_test_path, n_labels= "2_way_label")
@@ -43,20 +42,20 @@ num_labels = 2
 
 ## code source: https://colab.research.google.com/drive/1l39vWjZ5jRUimSQDoUcuWGIoNjLjA2zu#scrollTo=scT82c9arCRv
 ## code source: https://towardsdatascience.com/discover-the-sentiment-of-reddit-subgroup-using-roberta-model-10ab9a8271b8
-def convert_example_to_feature_bert(review):
+def convert_example_to_feature(review, roberta):
+    # combine step for tokenization, WordPiece vector mapping and will
+    # add also special tokens and truncate reviews longer than our max length
+    if roberta: 
+        return roberta_tokenizer.encode_plus(review,
+                                     add_special_tokens=True,  # add [CLS], [SEP]
+                                     max_length=max_length,  # max length of the text that can go to RoBERTa
+                                     pad_to_max_length=True,  # add [PAD] tokens at the end of sentence
+                                     return_attention_mask=True,  # add attention mask to not focus on pad tokens
+                                     )
+
     # combine step for tokenization, WordPiece vector mapping and will
     # add also special tokens and truncate reviews longer than our max length
     return bert_tokenizer.encode_plus(review,
-                                 add_special_tokens=True,  # add [CLS], [SEP]
-                                 max_length=max_length,  # max length of the text that can go to RoBERTa
-                                 pad_to_max_length=True,  # add [PAD] tokens at the end of sentence
-                                 return_attention_mask=True,  # add attention mask to not focus on pad tokens
-                                 )
-
-def convert_example_to_feature_roberta(review):
-    # combine step for tokenization, WordPiece vector mapping and will
-    # add also special tokens and truncate reviews longer than our max length
-    return roberta_tokenizer.encode_plus(review,
                                  add_special_tokens=True,  # add [CLS], [SEP]
                                  max_length=max_length,  # max length of the text that can go to RoBERTa
                                  pad_to_max_length=True,  # add [PAD] tokens at the end of sentence
@@ -80,11 +79,7 @@ def encode_examples(ds, roberta, limit=-1):
         ds = ds.take(limit)
 
     for review, label in tfds.as_numpy(ds):
-        if roberta:
-            bert_input = convert_example_to_feature_roberta(review.decode())
-        else:
-            bert_input = convert_example_to_feature_bert(review.decode())
-            
+        bert_input = convert_example_to_feature(review.decode(), roberta)
         input_ids_list.append(bert_input['input_ids'])
         attention_mask_list.append(bert_input['attention_mask'])
         label_list.append([label])
@@ -126,41 +121,11 @@ def run_model(roberta):
     print(model.evaluate(ds_val_encoded))
     print(model.evaluate(ds_test_encoded))
     return model
-"""
+
+print("roBERTa")
 roberta = run_model(True)
-"""
+print("BERT")
 bert = run_model(False)
 
 end = time.time()
-
-import matplotlib.pyplot as plt
-
- 
-
-def plot_token_length(X_train, X_val, X_test):
-    token_length_bert = []
-    token_length_roberta = []
-    length_all = []
-    number = 0
-    df_all = X_train
-    df_all.append(X_val)
-    df_all.append(X_test)
-    
-    for i in range(len(all)):
-        len_token_bert = len(bert_tokenizer.tokenize(df_all[i]))
-        len_token_roberta = len(roberta_tokenizer.tokenize(df_all[i]))
-        length = len(df_all[i])
-        token_length_bert.append(len_token_bert)
-        token_length_roberta.append(len_token_roberta)
-        length_all.append(length)
-        if length > 128:
-            number +=1 
-    print(token_length_bert, token_length_bert)
-    return token_length, number
-x, num = plot_token_length(X_train)
-print(num)
-plt.hist(x, bins=50)    
-plt.hist(x, bins=50)
-plt.xlim(0,200)
-plt.show()
 
