@@ -1,6 +1,9 @@
 from enum import Enum, auto
 from pathlib import Path
 from tensorflow.keras.utils import Sequence, to_categorical
+from tensorflow.keras.applications.inception_v3 import preprocess_input as inception_preprocess_input
+from tensorflow.keras.applications.efficientnet import preprocess_input as efficientnet_preprocess_input
+from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input as inception_resnet_preprocess_input
 import cv2
 import math
 import numpy as np
@@ -10,8 +13,10 @@ from utils.config import (
     dataset_test_path,
     dataset_train_path,
     dataset_validate_path,
-    dataset_images_path)
-
+    dataset_images_path,
+    img_size,
+    training_batch_size)
+from utils.image_model_factory import ModelType
 
 class ModeType(Enum):
     TRAIN = auto()
@@ -19,11 +24,11 @@ class ModeType(Enum):
     VALIDATE = auto()
 
 
-class FakedditSequence(Sequence):
+class ImageSequence(Sequence):
     """ Sequence for loading data and training models """
 
-    def __init__(self, batch_size, image_size, mode=ModeType.TRAIN, n_labels=2):
-        """ Creates an instance of FakedditSequence
+    def __init__(self, model_type, mode=ModeType.TRAIN, n_labels=2):
+        """ Creates an instance of ImageSequence
 
         Parameters:
         -----------
@@ -48,8 +53,9 @@ class FakedditSequence(Sequence):
             raise ValueError('n_labels can only be 2, 3, or 6')
 
         self.df = pd.read_csv(df_path, sep='\t', header=0)
-        self.batch_size = batch_size
-        self.image_size = image_size
+        self.batch_size = training_batch_size
+        self.image_size = img_size
+        self.model_type = model_type
         self.n_labels = n_labels
         self.labels = f'{n_labels}_way_label'
 
@@ -79,6 +85,12 @@ class FakedditSequence(Sequence):
         img = cv2.imread(str(path), cv2.IMREAD_COLOR)
         # resize with resampling using pixel area relation
         img = cv2.resize(img, self.image_size, interpolation=cv2.INTER_AREA)
-        # flatten img array 3d -> 1d
-        # img = img.flatten()
+
+        if self.model_type == ModelType.INCEPTION:
+            img = inception_preprocess_input(img)
+        elif self.model_type == ModelType.INCEPTIONRESNET:
+            img = inception_resnet_preprocess_input(img)
+        elif self.model_type == ModelType.EFFIECENTNET:
+            img = efficientnet_preprocess_input(img)
+        
         return img

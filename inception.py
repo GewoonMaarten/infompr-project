@@ -1,32 +1,26 @@
-from utils.data_sequence import FakedditSequence, ModeType
+from utils.data_sequence import ImageSequence, ModeType
 from utils.image_model_factory import ModelBuilder, ModelType
-from utils.config import (
-    training_batch_size,
-    training_epochs,
-    img_size
-)
+from utils.config import training_epochs
 
 n_labels = 2
+model_type = ModelType.INCEPTION
 
-train_seq = FakedditSequence(
-    training_batch_size,
-    img_size,
+train_seq = ImageSequence(
+    model_type,
     mode=ModeType.TRAIN,
     n_labels=n_labels)
 
-test_seq = FakedditSequence(
-    training_batch_size,
-    img_size,
+test_seq = ImageSequence(
+    model_type,
     mode=ModeType.TEST,
     n_labels=n_labels)
 
-validate_seq = FakedditSequence(
-    training_batch_size,
-    img_size,
+validate_seq = ImageSequence(
+    model_type,
     mode=ModeType.VALIDATE,
     n_labels=n_labels)
 
-model_builder = ModelBuilder(ModelType.INCEPTION, n_labels=n_labels)
+model_builder = ModelBuilder(model_type, n_labels=n_labels)
 model_builder.compile_for_transfer_learning()
 
 history = model_builder.model.fit(train_seq, validation_data=validate_seq, epochs=training_epochs)
