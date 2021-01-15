@@ -1,6 +1,9 @@
 from utils.data_sequence import ImageSequence, ModeType
 from utils.image_model_factory import ModelBuilder, ModelType
 from utils.config import training_epochs
+import os
+
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 n_labels = 2
 model_type = ModelType.INCEPTION
@@ -35,4 +38,4 @@ score = model_builder.model.evaluate(test_seq)
 
 print(f'Test scores: {score}')
 
-model.save("models/inception3.hdf5")
+model_builder.model.save("models/inception3.hdf5")

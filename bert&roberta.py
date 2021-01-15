@@ -90,9 +90,9 @@ def encode_examples(ds, roberta, limit=-1):
 
 
 # create dataset suitable for roBERTa model
-training_sentences_modified = tf.data.Dataset.from_tensor_slices((X_train_s[:300], y_train_s[:300]))
-validating_sentences_modified = tf.data.Dataset.from_tensor_slices((X_val_s, y_val_s))
-testing_sentences_modified = tf.data.Dataset.from_tensor_slices((X_test_s, y_test_s))
+training_sentences_modified = tf.data.Dataset.from_tensor_slices((X_train[:300], y_train[:300]))
+validating_sentences_modified = tf.data.Dataset.from_tensor_slices((X_val, y_val))
+testing_sentences_modified = tf.data.Dataset.from_tensor_slices((X_test, y_test))
 
   
 
