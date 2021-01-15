@@ -13,13 +13,13 @@ class ModelType(Enum):
     EFFIECENTNET = auto()
 
 
-def build_model(model_type, n_labels):
+def build_model(model_type, n_labels, path_to_weights=None):
     if model_type == ModelType.INCEPTION:
-        model = __build_inception(n_labels)
+        model = __build_inception(n_labels, path_to_weights)
     elif model_type == ModelType.INCEPTIONRESNET:
-        model = __build_inceptionresnet(n_labels)
+        model = __build_inceptionresnet(n_labels, path_to_weights)
     elif model_type == ModelType.EFFIECENTNET:
-        model = __build_effiecentnet(n_labels)
+        model = __build_effiecentnet(n_labels, path_to_weights)
     else:
         raise ValueError('Not a valid value for model')
 
@@ -27,19 +27,24 @@ def build_model(model_type, n_labels):
     return model
 
 
-def __build_inception(n_labels):
+def __build_inception(n_labels, path_to_weights=None):
     base_model = InceptionV3(weights='imagenet', include_top=False)
 
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
-    x = Dense(1024, activation='relu')(x)
+    x = Dense(1024, activation='relu', name='image_dense_1024')(x)
 
     predictions = Dense(n_labels, activation='softmax')(x)
 
-    return Model(inputs=base_model.input, outputs=predictions, name="Inception")
+    model = Model(inputs=base_model.input, outputs=predictions, name="Inception")
+
+    if path_to_weights:
+        model.load_weights(path_to_weights)
+
+    return model
 
 
-def __build_inceptionresnet(n_labels):
+def __build_inceptionresnet(n_labels, path_to_weights=None):
     base_model = InceptionResNetV2(weights='imagenet', include_top=False)
 
     x = base_model.output
@@ -51,7 +56,7 @@ def __build_inceptionresnet(n_labels):
     return Model(inputs=base_model.input, outputs=predictions, name="Inception-ResNet")
 
 
-def __build_effiecentnet(n_labels):
+def __build_effiecentnet(n_labels, path_to_weights=None):
     weights_path = Path(Path().absolute(),
                         'bin',
                         'noisy-student',

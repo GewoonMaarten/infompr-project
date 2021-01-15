@@ -33,4 +33,4 @@ score = model.evaluate(test_seq)
 
 print(f'Test loss: {score}')
 
-# model.save("models/inception.hdf5")
+model.save("models/inception3.hdf5")
