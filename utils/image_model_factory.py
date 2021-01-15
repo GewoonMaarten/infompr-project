@@ -2,10 +2,12 @@ from enum import Enum, auto
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
 from tensorflow.keras.applications import EfficientNetB7
-from tensorflow.keras.layers import BatchNormalization, Dense, Dropout, Flatten, GlobalAveragePooling2D
+from tensorflow.keras.layers import Input, BatchNormalization, Dense, Dropout, Flatten, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import SGD
 from pathlib import Path
 
+from utils.config import img_height, img_width
 
 class ModelType(Enum):
     INCEPTION = auto()
@@ -107,7 +109,10 @@ class ModelBuilder():
 
 
     def __build_inception(self, n_labels):
-        self.base_model = InceptionV3(weights='imagenet', include_top=False)
+        input_tensor = Input(shape=(img_width, img_height, 3))
+        self.base_model = InceptionV3(input_tensor=input_tensor, 
+                                      weights='imagenet', 
+                                      include_top=False)
 
         x = self.base_model.output
         x = GlobalAveragePooling2D()(x)
@@ -120,7 +125,9 @@ class ModelBuilder():
                            name="Inception")
 
     def __build_inceptionresnet(self, n_labels):
-        self.base_model = InceptionResNetV2(weights='imagenet', 
+        input_tensor = Input(shape=(img_width, img_height, 3))
+        self.base_model = InceptionResNetV2(input_tensor=input_tensor, 
+                                            weights='imagenet', 
                                             include_top=False)
 
         x = self.base_model.output
@@ -142,7 +149,9 @@ class ModelBuilder():
         if not weights_path.exists():
             raise Exception('Could not find weights file?!')
 
-        self.base_model = EfficientNetB7(weights=str(weights_path), 
+        input_tensor = Input(shape=(img_width, img_height, 3))
+        self.base_model = EfficientNetB7(input_tensor=input_tensor,
+                                         weights=str(weights_path), 
                                          include_top=False)
 
         x = self.base_model.output
@@ -157,12 +166,22 @@ class ModelBuilder():
                            name="EfficientNet")
 
     def compile_for_transfer_learning(self):
-        for layer in self.base_model.layers:
-            layer.trainable = False
-
+        self.base_model.trainable = False
         loss = 'binary_crossentropy' if self.n_lables == 2 else 'categorical_crossentropy'
         self.model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
 
     def compile_for_fine_tuning(self):
+<<<<<<< HEAD
         pass
 >>>>>>> 1e95774 (Refactor image model factory)
+=======
+        for layer in self.model.layers[:249]:
+            layer.trainable = False
+        for layer in self.model.layers[249:]:
+            layer.trainable = True
+        # self.base_model.trainable = False
+        loss = 'binary_crossentropy' if self.n_lables == 2 else 'categorical_crossentropy'
+        self.model.compile(optimizer=SGD(lr=0.0001, momentum=0.9), 
+                           loss=loss, 
+                           metrics=['accuracy'])
+>>>>>>> a0c5edc (Add fine tuning to image model factory)

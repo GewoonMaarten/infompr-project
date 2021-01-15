@@ -32,6 +32,13 @@ model_builder.compile_for_transfer_learning()
 history = model_builder.model.fit(train_seq, validation_data=validate_seq, epochs=training_epochs)
 score = model_builder.model.evaluate(test_seq)
 
-print(f'Test loss: {score}')
+print(f'Test scores: {score}')
+
+model_builder.compile_for_fine_tuning()
+
+history = model_builder.model.fit(train_seq, validation_data=validate_seq, epochs=training_epochs)
+score = model_builder.model.evaluate(test_seq)
+
+print(f'Test scores: {score}')
 
 model.save("models/inception3.hdf5")
