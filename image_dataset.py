@@ -25,7 +25,7 @@ DF_PATHS = {
 PREPROCESSORS = {
     'inceptionv3': inception_preprocess_input,
     'inceptionresnet': inception_resnet_preprocess_input,
-    'effiecentnet': efficientnet_preprocess_input
+    'efficientnet': efficientnet_preprocess_input
 }
 
 
@@ -43,7 +43,7 @@ class Fakeddit(tf.data.Dataset):
         except KeyError:
             raise KeyError(
                 f'model can only be "inceptionv3", "inceptionresnet" or '
-                f'"effiecentnet", actual value: {mode}')
+                f'"efficientnet", actual value: {mode}')
 
         df = pd.read_csv(df_path, sep='\t', header=0)
         for _, r in df.iterrows():
