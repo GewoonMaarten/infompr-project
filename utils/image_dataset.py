@@ -17,6 +17,7 @@ DF_PATHS = {
     'validate': dataset_validate_path
 }
 
+
 class ImageDataset(tf.data.Dataset):
     def _generator(mode):
         try:
@@ -56,50 +57,3 @@ def configure_for_performance(ds):
     ds = ds.batch(training_batch_size, drop_remainder=True)
     ds = ds.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
     return ds
-
-
-# if __name__ == "__main__":
-#     tfc.run(
-#         # requirements_txt="requirements.txt",
-#         distribution_strategy="auto",
-#         chief_config=tfc.MachineConfig(
-#             cpu_cores=8,
-#             memory=30,
-#             accelerator_type=tfc.AcceleratorType.NVIDIA_TESLA_T4,
-#             accelerator_count=1,
-#         ),
-#         docker_image_bucket_name=GCP_BUCKET,
-#     )
-
-    # train_ds = configure_for_performance(Fakeddit('train'))
-#     test_ds = configure_for_performance(Fakeddit('test', 'inceptionv3'))
-#     validate_ds = configure_for_performance(
-#         Fakeddit('validate', 'inceptionv3'))
-
-#     model_type = ModelType.INCEPTION
-
-#     model_builder = ModelBuilder(model_type, 2)
-#     model_builder.compile_for_transfer_learning()
-
-#     # checkpoint_path = os.path.join(
-#     #     "gs://", GCP_BUCKET, MODEL_PATH, "save_at_{epoch}")
-#     # tensorboard_path = os.path.join(
-#     #     "gs://", GCP_BUCKET, "logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-#     # )
-#     # callbacks = [
-#     #     tf.keras.callbacks.ModelCheckpoint(checkpoint_path),
-#     #     tf.keras.callbacks.TensorBoard(
-#     #         log_dir=tensorboard_path, histogram_freq=1),
-#     #     tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3),
-#     # ]
-
-#     model = model_builder.model
-#     history = model_builder.model.fit(
-#         train_ds, validation_data=validate_ds, epochs=training_epochs, batch_size=training_batch_size)
-#     # score = model_builder.model.evaluate(test_ds)
-
-#     # if tfc.remote():
-#     #     SAVE_PATH = os.path.join("gs://", GCP_BUCKET, MODEL_PATH)
-#     #     model.save(SAVE_PATH)
-#     #     model = tf.keras.models.load_model(SAVE_PATH)
-#     # model.evaluate(test_ds)
