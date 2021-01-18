@@ -92,7 +92,7 @@ class ModelBuilder():
 
         x = self.base_model.output
         x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
-        x = layers.BatchNormalization()(x)
+        x = layers.BatchNormalization(name='image_dense_1024')(x)
         x = layers.Dropout(0.2, name="top_dropout")(x)
 
         predictions = layers.Dense(2, activation="softmax")(x)

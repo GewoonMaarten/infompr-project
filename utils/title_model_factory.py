@@ -28,8 +28,8 @@ def build_title_model(n_labels, path_to_weights=None):
     output = Dropout(0.5, name = 'title_dropout')(output) 
     output = Dense(n_labels, activation="softmax", name = 'title_softmax')(output)
 
-    model = Model(inputs=[input], outputs=[output], name='title_model')
-    model.build(input_shape=(None, text_max_length))
+    model = Model(inputs=input, outputs=output, name='title_model')
+    # model.build(input_shape=(None, text_max_length))
 
     # # input
     # model.layers[0].trainable = False
