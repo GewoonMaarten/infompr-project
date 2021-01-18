@@ -1,4 +1,6 @@
-tqdm~=4.50.0
-pandas~=1.1.2
-tensorflow~=2.4.0
-opencv-python~=4.5.1.48 
+numpy==1.19.5
+pandas==1.1.5
+tensorflow==2.4.0
+tensorflow-cloud==0.1.11
+tqdm==4.50.2
+matplotlib==3.3.3

@@ -1,104 +1,101 @@
-from enum import Enum, auto
-from tensorflow.keras.applications.inception_v3 import InceptionV3
-from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
-from tensorflow.keras.applications import EfficientNetB7
-from tensorflow.keras.layers import Input, BatchNormalization, Dense, Dropout, Flatten, GlobalAveragePooling2D
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import SGD
 from pathlib import Path
+
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.applications import (
+    EfficientNetB0,
+    EfficientNetB1,
+    EfficientNetB2,
+    EfficientNetB3,
+    EfficientNetB4,
+    EfficientNetB5,
+    EfficientNetB6,
+    EfficientNetB7)
+from tensorflow.keras import layers
+from tensorflow.keras.models import Model
 
 from utils.config import img_height, img_width
 
+SIZES = {
+    'b0': {
+        'model': EfficientNetB0,
+        'weights': 'efficientnetb0_notop.h5'
+    },
+    'b1': {
+        'model': EfficientNetB1,
+        'weights': 'efficientnetb1_notop.h5'
+    },
+    'b2': {
+        'model': EfficientNetB2,
+        'weights': 'efficientnetb2_notop.h5'
+    },
+    'b3': {
+        'model': EfficientNetB3,
+        'weights': 'efficientnetb3_notop.h5'
+    },
+    'b4': {
+        'model': EfficientNetB4,
+        'weights': 'efficientnetb4_notop.h5'
+    },
+    'b5': {
+        'model': EfficientNetB5,
+        'weights': 'efficientnetb5_notop.h5'
+    },
+    'b6': {
+        'model': EfficientNetB6,
+        'weights': 'efficientnetb6_notop.h5'
+    },
+    'b7': {
+        'model': EfficientNetB7,
+        'weights': 'efficientnetb7_notop.h5'
+    }
+}
 
-class ModelType(Enum):
-    INCEPTION = auto()
-    INCEPTIONRESNET = auto()
-    EFFIECENTNET = auto()
 
 class ModelBuilder():
-    def __init__(self, model_type, n_labels) -> None:
-        self.model_type = model_type
-        self.n_lables = n_labels
+    def __init__(self, size) -> None:
         self.model = None
         self.base_model = None
-
-        if model_type == ModelType.INCEPTION:
-            self.__build_inception(n_labels)
-        elif model_type == ModelType.INCEPTIONRESNET:
-            self.__build_inceptionresnet(n_labels)
-        elif model_type == ModelType.EFFIECENTNET:
-            self.__build_effiecentnet(n_labels)
-        else:
-            raise ValueError('Not a valid value for model')
+        self.__build_efficientnet(SIZES[size]['model'], SIZES[size]['weights'])
 
     def compile_for_transfer_learning(self):
         self.base_model.trainable = False
-        loss = 'binary_crossentropy' if self.n_lables == 2 else 'categorical_crossentropy'
-        self.model.compile(optimizer='adam', loss=loss, metrics=['accuracy'])
-
-    def compile_for_fine_tuning(self):
-        for layer in self.model.layers[:249]:
-            layer.trainable = False
-        for layer in self.model.layers[249:]:
-            layer.trainable = True
-        # self.base_model.trainable = False
-        loss = 'binary_crossentropy' if self.n_lables == 2 else 'categorical_crossentropy'
-        self.model.compile(optimizer=SGD(lr=0.0001, momentum=0.9),
-                           loss=loss,
+        optimizer = Adam(learning_rate=1e-2)
+        self.model.compile(optimizer=optimizer,
+                           loss='binary_crossentropy',
                            metrics=['accuracy'])
 
-    def __build_inception(self, n_labels):
-        input_tensor = Input(shape=(img_width, img_height, 3))
-        self.base_model = InceptionV3(input_tensor=input_tensor,
-                                      weights='imagenet',
-                                      include_top=False)
+    def compile_for_fine_tuning(self):
+        self.base_model.trainable = True
+        # We unfreeze the top 20 layers while leaving BatchNorm layers frozen
+        for layer in self.model.layers[-20:]:
+            if not isinstance(layer, layers.BatchNormalization):
+                layer.trainable = True
 
-        x = self.base_model.output
-        x = GlobalAveragePooling2D()(x)
-        x = Dense(1024, activation='relu', name = 'image_dense_1024')(x)
+        optimizer = Adam(learning_rate=1e-4)
+        self.model.compile(optimizer=optimizer,
+                           loss='binary_crossentropy',
+                           metrics=['accuracy'])
 
-        predictions = Dense(n_labels, activation='softmax')(x)
-
-        self.model = Model(inputs=self.base_model.input,
-                           outputs=predictions,
-                           name="Inception")
-
-    def __build_inceptionresnet(self, n_labels):
-        input_tensor = Input(shape=(img_width, img_height, 3))
-        self.base_model = InceptionResNetV2(input_tensor=input_tensor,
-                                            weights='imagenet',
-                                            include_top=False)
-
-        x = self.base_model.output
-        x = Flatten()(x)
-        x = Dropout(0.5)(x)
-
-        predictions = Dense(n_labels, activation='softmax')(x)
-
-        self.model = Model(inputs=self.base_model.input,
-                           outputs=predictions,
-                           name="Inception-ResNet")
-
-    def __build_effiecentnet(self, n_labels):
+    def __build_efficientnet(self, model, weight_path):
         weights_path = Path(Path().absolute(),
                             'bin',
                             'noisy-student',
-                            'efficientnetb7_notop.h5')
+                            weight_path)
 
         if not weights_path.exists():
             raise Exception('Could not find weights file?!')
 
-        input_tensor = Input(shape=(img_width, img_height, 3))
-        self.base_model = EfficientNetB7(input_tensor=input_tensor,
-                                         weights=str(weights_path),
-                                         include_top=False)
+        input_tensor = layers.Input(shape=(img_width, img_height, 3))
+        self.base_model = model(input_tensor=input_tensor,
+                                weights=str(weights_path),
+                                include_top=False)
 
         x = self.base_model.output
-        x = GlobalAveragePooling2D(name="avg_pool")(x)
-        x = BatchNormalization()(x)
-        x = Dropout(0.2, name="top_dropout")(x)
+        x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
+        x = layers.BatchNormalization()(x)
+        x = layers.Dropout(0.2, name="top_dropout")(x)
 
-        predictions = Dense(n_labels, activation="softmax")(x)
+        predictions = layers.Dense(2, activation="softmax")(x)
 
         self.model = Model(inputs=self.base_model.input,
                            outputs=predictions,
