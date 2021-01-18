@@ -7,9 +7,7 @@ from utils.config import (
     dataset_validate_path,
     dataset_images_path,
     img_height,
-    img_width,
-    training_batch_size)
-
+    img_width)
 
 DF_PATHS = {
     'train': dataset_train_path,
@@ -49,11 +47,3 @@ class DatasetImage(tf.data.Dataset):
                 tf.TensorSpec(shape=(2,), dtype=tf.float32)),
             args=(tf.constant(mode, dtype=tf.string),)
         )
-
-
-def configure_for_performance(ds):
-    ds = ds.cache()
-    ds = ds.shuffle(buffer_size=100)
-    ds = ds.batch(training_batch_size, drop_remainder=True)
-    ds = ds.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
-    return ds

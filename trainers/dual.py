@@ -1,13 +1,9 @@
-from utils.dataset_dual import DatasetDual, configure_for_performance
+from utils.dataset_dual import DatasetDual
 from utils.title_model_factory import build_title_model
 from utils.image_model_factory import ModelBuilder
 from utils.dual_model_factory import concat_image_title_model
-from utils.config import (
-    training_batch_size,
-    training_epochs,
-    img_size
-)
-
+from utils.config import training_epochs
+from utils.common import configure_for_performance
 n_labels = 2
 
 train_seq = configure_for_performance(DatasetDual('train'))

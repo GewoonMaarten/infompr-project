@@ -1,6 +1,7 @@
 from utils.image_model_factory import ModelBuilder
 from utils.config import training_epochs
-from utils.dataset_image import DatasetImage, configure_for_performance
+from utils.dataset_image import DatasetImage
+from utils.common import configure_for_performance
 import os
 import datetime
 import tensorflow as tf

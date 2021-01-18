@@ -1,6 +1,7 @@
-from utils.dataset_text import DatasetText, configure_for_performance
+from utils.dataset_text import DatasetText
 from utils.title_model_factory import build_title_model
 from utils.config import (training_epochs)
+from utils.common import configure_for_performance
 
 n_labels = 2
 

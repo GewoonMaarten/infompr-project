@@ -59,11 +59,3 @@ class DatasetText(tf.data.Dataset):
                 tf.TensorSpec(shape=(), dtype=tf.float32)),
             args=(tf.constant(mode, dtype=tf.string),)
         )
-
-
-def configure_for_performance(ds):
-    ds = ds.cache()
-    ds = ds.shuffle(buffer_size=100)
-    ds = ds.batch(training_batch_size, drop_remainder=True)
-    ds = ds.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
-    return ds
