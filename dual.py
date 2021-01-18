@@ -1,4 +1,4 @@
-from utils.dual_sequence import DualDataset, configure_for_performance
+from utils.dataset_dual import DualDataset, configure_for_performance
 from utils.title_model_factory import build_title_model
 from utils.image_model_factory import ModelBuilder
 from utils.dual_model_factory import concat_image_title_model

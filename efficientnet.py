@@ -1,6 +1,6 @@
 from utils.image_model_factory import ModelBuilder
 from utils.config import training_epochs
-from utils.image_dataset import ImageDataset, configure_for_performance
+from utils.dataset_image import ImageDataset, configure_for_performance
 import os
 import datetime
 import tensorflow as tf
@@ -28,8 +28,11 @@ MODEL_PATH = 'efficientnet'
 #         accelerator_type=tfc.AcceleratorType.NVIDIA_TESLA_T4,
 #         accelerator_count=1,
 #     ),
-#     docker_image_bucket_name=GCP_BUCKET,
+#     worker_count=0,
+#     stream_logs=True
+#     # docker_image_bucket_name=GCP_BUCKET,
 # )
+
 checkpoint_path = os.path.join(
     "gs://", GCP_BUCKET, MODEL_PATH, "save_at_{epoch}")
 tensorboard_path = os.path.join(
@@ -70,4 +73,4 @@ if tfc.remote():
     model = tf.keras.models.load_model(SAVE_PATH)
 #     # model.evaluate(test_ds)
 
-# model_builder.model.save("models/inception3.hdf5")
+model_builder.model.save("models/efficientnet.hdf5")
