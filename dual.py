@@ -1,7 +1,7 @@
 from utils.data_sequence import ModeType
 from utils.dual_sequence import FakedditDualSequence
 from utils.title_model_factory import build_title_model
-from utils.image_model_factory import build_model as build_image_model, ModelType
+from utils.image_model_factory import ModelBuilder, ModelType
 from utils.dual_model_factory import concat_image_title_model
 from utils.config import (
     training_batch_size,
@@ -29,7 +29,12 @@ validate_seq = FakedditDualSequence(
     mode=ModeType.VALIDATE, 
     n_labels=n_labels)
 
-image_model = build_image_model(ModelType.INCEPTION, n_labels=n_labels, path_to_weights="models/inception3.hdf5")
+image_model = ModelBuilder(ModelType.INCEPTION, n_labels=n_labels)
+image_model.compile_for_transfer_learning()
+image_model = image_model.model
+image_model.load_weights("models/inception4.hdf5")
+for layer in image_model.layers:
+    layer.trainable = False
 title_model = build_title_model(n_labels, "models/roberta.hdf5")
 
 model = concat_image_title_model(image_model, title_model, n_labels)
@@ -39,4 +44,4 @@ score = model.evaluate(test_seq)
 
 print(f'Test loss: {score}')
 
-model.save("models/dual.hdf5")
+model.save_weights("models/dual.hdf5")

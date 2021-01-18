@@ -55,7 +55,7 @@ class ModelBuilder():
 
         x = self.base_model.output
         x = GlobalAveragePooling2D()(x)
-        x = Dense(1024, activation='relu')(x)
+        x = Dense(1024, activation='relu', name = 'image_dense_1024')(x)
 
         predictions = Dense(n_labels, activation='softmax')(x)
 
