@@ -3,27 +3,22 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from transformers import TFRobertaForSequenceClassification, TFBertForSequenceClassification
-import time
-
 from utils.config import (
     dataset_test_path,
     dataset_train_path,
     dataset_validate_path)
 
-def timer(start,end):
-    hours, rem = divmod(end-start, 3600)
-    minutes, seconds = divmod(rem, 60)
-    print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))  
 
-def read_data(data, n_labels):
+def read_data(data, n_labels = "2_way_label"):
     df = pd.read_csv(data, sep='\t', header =0)
     X_train = df['clean_title']
     y_train = df[n_labels]
     return df, X_train, y_train
 
-df_train, X_train, y_train = read_data(dataset_train_path, n_labels= "2_way_label")
-df_val, X_val, y_val = read_data(dataset_validate_path, n_labels= "2_way_label")
-df_test, X_test, y_test = read_data(dataset_test_path, n_labels= "2_way_label")
+
+df_train, X_train_s, y_train_s = read_data(dataset_train_path)
+df_val, X_val_s, y_val_s = read_data(dataset_validate_path)
+df_test, X_test_s, y_test_s = read_data(dataset_test_path)
 
 
 roberta_tokenizer = RobertaTokenizer.from_pretrained("roberta-base")
@@ -34,11 +29,12 @@ model_bert = bert_model = TFBertForSequenceClassification.from_pretrained("bert-
 
 
 #Defining the hyper-parameters
-number_of_epochs = 3
+number_of_epochs = 8
 max_length = 128
 batch_size = 64
 learning_rate=3e-5
 num_labels = 2
+
 
 ## code source: https://colab.research.google.com/drive/1l39vWjZ5jRUimSQDoUcuWGIoNjLjA2zu#scrollTo=scT82c9arCRv
 ## code source: https://towardsdatascience.com/discover-the-sentiment-of-reddit-subgroup-using-roberta-model-10ab9a8271b8
@@ -90,9 +86,9 @@ def encode_examples(ds, roberta, limit=-1):
 
 
 # create dataset suitable for roBERTa model
-training_sentences_modified = tf.data.Dataset.from_tensor_slices((X_train[:300], y_train[:300]))
-validating_sentences_modified = tf.data.Dataset.from_tensor_slices((X_val, y_val))
-testing_sentences_modified = tf.data.Dataset.from_tensor_slices((X_test, y_test))
+training_sentences_modified = tf.data.Dataset.from_tensor_slices((X_train_s[:300], y_train_s[:300]))
+validating_sentences_modified = tf.data.Dataset.from_tensor_slices((X_val_s, y_val_s))
+testing_sentences_modified = tf.data.Dataset.from_tensor_slices((X_test_s, y_test_s))
 
   
 
@@ -123,9 +119,33 @@ def run_model(roberta):
     return model
 
 print("roBERTa")
+
 roberta = run_model(True)
 print("BERT")
 bert = run_model(False)
 
-end = time.time()
 
+
+def plot_token_length(X_train):
+    token_length = []
+    normal_word_len = []
+    ids = []
+    for i in range(len(X_train)):
+        length = len(roberta_tokenizer.tokenize(X_train[i]))
+        if length > 128:
+            token_length.append(length)
+            ids.append(df_train['id'][i])
+            normal_word_len.append(X_train[i])
+    return token_length, normal_word_len, ids
+
+"""
+## 
+input_layer = Input(shape = (512,), dtype='int64')
+bert = TFBertModel.from_pretrained('bert-base-cased')(input_layer)
+bert = bert[0]              # i think there is a bug here
+flat = Flatten()(bert)
+classifier = Dense(units=5)(flat)
+model = Model(inputs=input_layer, outputs=classifier)
+model.summary()
+"""
+""""""
