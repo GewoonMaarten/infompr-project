@@ -1,31 +1,12 @@
-from utils.data_sequence import ModeType
-from utils.title_sequence import FakedditTitleSequence
+from utils.dataset_text import DatasetText, configure_for_performance
 from utils.title_model_factory import build_title_model
-from utils.config import (
-    training_batch_size,
-    training_epochs,
-    img_size
-)
+from utils.config import (training_epochs)
 
 n_labels = 2
 
-train_seq = FakedditTitleSequence(
-    training_batch_size, 
-    img_size, 
-    mode=ModeType.TRAIN, 
-    n_labels=n_labels)
-
-test_seq = FakedditTitleSequence(
-    training_batch_size,
-    img_size, 
-    mode=ModeType.TEST,
-     n_labels=n_labels)
-    
-validate_seq = FakedditTitleSequence(
-    training_batch_size, 
-    img_size, 
-    mode=ModeType.VALIDATE, 
-    n_labels=n_labels)
+train_seq = configure_for_performance(DatasetText('train'))
+test_seq = configure_for_performance(DatasetText('test'))
+validate_seq = configure_for_performance(DatasetText('validate'))
 
 model = build_title_model(n_labels)
 
