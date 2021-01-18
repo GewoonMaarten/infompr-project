@@ -31,17 +31,17 @@ def build_title_model(n_labels, path_to_weights=None):
     model = Model(inputs=[input], outputs=[output], name='title_model')
     model.build(input_shape=(None, text_max_length))
 
-    # input
-    model.layers[0].trainable = False
-    # roberta
-    model.layers[1].trainable = False
-    # lambda
-    model.layers[2].trainable = False
+    # # input
+    # model.layers[0].trainable = False
+    # # roberta
+    # model.layers[1].trainable = False
+    # # lambda
+    # model.layers[2].trainable = False
 
-    if path_to_weights:
-        model.load_weights(path_to_weights)
-        for layer in model.layers:
-            layer.trainable = False
+    # if path_to_weights:
+    #     model.load_weights(path_to_weights)
+    #     for layer in model.layers:
+    #         layer.trainable = False
         
     model.compile(optimizer=optimizer, loss=loss, metrics=[metric])
 
