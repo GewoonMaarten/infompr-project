@@ -1,5 +1,5 @@
 from pathlib import Path
-from PIL import Image
+import tensorflow as tf
 from tqdm import tqdm
 import pandas as pd
 
@@ -23,8 +23,9 @@ def fix_dataset(path):
         id = row['id']
         img_path = Path(dataset_images_path, f'{id}.jpg')
         try:
-            Image.open(str(img_path))
-        except IOError:
+            img = tf.io.read_file(str(img_path))
+            img = tf.image.decode_jpeg(img, channels=3)
+        except:
             indexes_to_drop.append(index)
 
     df = df.drop(indexes_to_drop)
