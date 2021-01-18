@@ -18,7 +18,7 @@ DF_PATHS = {
 }
 
 
-class ImageDataset(tf.data.Dataset):
+class DatasetImage(tf.data.Dataset):
     def _generator(mode):
         try:
             df_path = DF_PATHS[mode.decode('utf-8')]

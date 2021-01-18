@@ -36,7 +36,7 @@ def convert_example_to_feature(review):
                                          return_attention_mask=True,  # add attention mask to not focus on pad tokens
                                          )
 
-class DualDataset(tf.data.Dataset):
+class DatasetDual(tf.data.Dataset):
     def _generator(mode):
         try:
             df_path = DF_PATHS[mode.decode('utf-8')]

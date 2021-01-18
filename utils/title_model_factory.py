@@ -3,8 +3,7 @@ from transformers import TFRobertaForSequenceClassification, RobertaConfig
 from tensorflow.keras.layers import Input, Dense, Dropout, Lambda
 from tensorflow.keras.models import Model
 
-from utils.config import (
-    text_max_length)
+from utils.config import text_max_length
 
 def build_title_model(n_labels, path_to_weights=None):
     # config = RobertaConfig.from_pretrained("roberta-base")

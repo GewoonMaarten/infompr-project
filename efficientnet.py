@@ -1,6 +1,6 @@
 from utils.image_model_factory import ModelBuilder
 from utils.config import training_epochs
-from utils.dataset_image import ImageDataset, configure_for_performance
+from utils.dataset_image import DatasetImage, configure_for_performance
 import os
 import datetime
 import tensorflow as tf
@@ -49,9 +49,9 @@ if tfc.remote():
 else:
     callbacks = None
 
-train_seq = configure_for_performance(ImageDataset('train'))
-test_seq = configure_for_performance(ImageDataset('test'))
-validate_seq = configure_for_performance(ImageDataset('validate'))
+train_seq = configure_for_performance(DatasetImage('train'))
+test_seq = configure_for_performance(DatasetImage('test'))
+validate_seq = configure_for_performance(DatasetImage('validate'))
 
 model_builder = ModelBuilder('b0')
 model_builder.compile_for_transfer_learning()
