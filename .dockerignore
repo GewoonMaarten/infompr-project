@@ -1,0 +1,13 @@
+.git
+.vscode
+
+venv
+notebooks
+logs
+checkpoints
+models
+scripts
+
+__pycache__
+
+README.md
