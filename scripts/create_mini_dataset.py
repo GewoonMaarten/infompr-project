@@ -62,7 +62,7 @@ def create_mini_dataset(name, path, sample_size, dest):
 
         shutil.copy(img_src, img_dest)
 
-    df.to_csv(Path(dest, f'mini_dataset_{name}.tsv'), sep='\t', index=False)
+    df_new.to_csv(Path(dest, f'mini_dataset_{name}.tsv'), sep='\t', index=False)
 
 
 if __name__ == "__main__":
