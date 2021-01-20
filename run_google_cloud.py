@@ -9,28 +9,29 @@ if __name__ == "__main__":
         '--trainer',
         choices=['dual', 'image', 'text'],
         required=True,
-        help='which dataset should be used to create the minidataset')
+        help='which trainer to use')
     args = parser.parse_args()
 
-    if args.trainer == 'image':
-        file = 'efficientnet.py'
-    elif args.trainer == 'text':
-        file = 'bert_roberta.py'
-    elif args.trainer == 'dual':
-        file = 'dual.py'
-    else:
-        raise ValueError('Trainer does not have a valid value.')
-
     tfc.run(
-        entry_point=f"trainers/{file}",
+        # entry_point=f"trainers/{file}",
         requirements_txt="requirements.txt",
         distribution_strategy="auto",
-        chief_config=tfc.MachineConfig(
-            cpu_cores=8,
-            memory=30,
-            accelerator_type=tfc.AcceleratorType.NVIDIA_TESLA_T4,
-            accelerator_count=1,
-        ),
-        worker_count=0,
-        stream_logs=True
+        # chief_config=tfc.MachineConfig(
+        #     cpu_cores=8,
+        #     memory=30,
+        #     accelerator_type=tfc.AcceleratorType.NVIDIA_TESLA_T4,
+        #     accelerator_count=1,
+        # ),
+        chief_config=tfc.COMMON_MACHINE_CONFIGS["K80_1X"],
+        # worker_count=0,
+        # stream_logs=True
     )
+
+    if args.trainer == 'image':
+        import trainers.efficientnet
+    elif args.trainer == 'text':
+        import trainers.bert_roberta
+    elif args.trainer == 'dual':
+        import trainers.dual
+    else:
+        raise ValueError('Trainer does not have a valid value.')
