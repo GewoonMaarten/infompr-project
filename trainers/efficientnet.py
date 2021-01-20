@@ -1,4 +1,4 @@
-from utils.image_model_factory import ModelBuilder
+from utils.model_factory_image import ModelBuilder
 from utils.config import training_epochs
 from utils.dataset_image import DatasetImage
 from utils.common import configure_for_performance

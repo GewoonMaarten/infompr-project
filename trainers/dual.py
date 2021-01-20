@@ -1,7 +1,7 @@
 from utils.dataset_dual import DatasetDual
-from utils.title_model_factory import build_title_model
-from utils.image_model_factory import ModelBuilder
-from utils.dual_model_factory import concat_image_title_model
+from utils.model_factory_title import build_title_model
+from utils.model_factory_image import ModelBuilder
+from utils.model_factory_dual import concat_image_title_model
 from utils.config import training_epochs
 from utils.common import configure_for_performance
 n_labels = 2

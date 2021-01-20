@@ -1,5 +1,5 @@
 from utils.dataset_text import DatasetText
-from utils.title_model_factory import build_title_model
+from utils.model_factory_title import build_title_model
 from utils.config import (training_epochs)
 from utils.common import configure_for_performance
 
