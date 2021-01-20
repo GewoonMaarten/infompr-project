@@ -6,6 +6,7 @@ import pandas as pd
 import shutil
 import urllib.request
 from PIL import Image
+import math
 
 try:
     from utils.config import (
@@ -28,14 +29,21 @@ def create_dir(name):
 def create_mini_dataset(name, path, sample_size, dest):
     df = pd.read_csv(path, sep='\t', header=0)
     # TODO Tom maybe we can find a way to retreive more samples if images are corrupt/not found
-    df = df.sample(n=sample_size, replace=False)
+    df_one = df[df['2_way_label'] == 1] \
+        .sample(n=math.floor(sample_size / 2), replace=False)
+    df_zero = df[df['2_way_label'] == 0] \
+        .sample(n=math.floor(sample_size / 2), replace=False)
+    df_new = pd.concat([df_one, df_zero], axis=0) 
+
+    df_new['2_way_label'] = pd.Categorical(df_new['2_way_label'])
+    print(df_new['2_way_label'].value_counts())
 
     # If the images folder does not exist
     # we create it as a cache folder
     if not Path(dataset_images_path).exists():
         create_dir(dataset_images_path)
 
-    for _, row in tqdm(df.iterrows(), total=len(df), unit='Images'):
+    for _, row in tqdm(df_new.iterrows(), total=len(df_new), unit='Images'):
         id = row['id']
         img_src = Path(dataset_images_path, f'{id}.jpg')
         img_dest = Path(dest, 'images', f'{id}.jpg')
