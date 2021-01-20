@@ -151,3 +151,7 @@ dmypy.json
 cython_debug/
 
 /data
+
+/.vscode/
+/models/
+/logs/
