@@ -35,6 +35,21 @@ It needs to have the following structure (keys with the `_` prefix are optional)
 ```
 This file is then loaded in `utils.config.py` to be made available for the whole project.
 
+These are the settings used in the final models:
+```json
+{
+  "epochs": 10,
+  "batch_size": 10,
+  "text_config": {
+    "max_length": 128
+  },
+  "img_config": {
+    "img_width": 380,
+    "img_height": 380
+  }
+}
+```
+
 ## Scripts
 Below are some scripts that can help you with training of the models.
 They need to be executed from the root directory of the project.
