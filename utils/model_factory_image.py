@@ -67,7 +67,7 @@ class ModelBuilder():
     def compile_for_fine_tuning(self):
         self.base_model.trainable = True
         # We unfreeze the top 20 layers while leaving BatchNorm layers frozen
-        for layer in self.model.layers[-20:]:
+        for layer in self.model.layers:
             if not isinstance(layer, layers.BatchNormalization):
                 layer.trainable = True
 
