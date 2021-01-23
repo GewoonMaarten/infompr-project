@@ -15,11 +15,11 @@ image_model.compile_for_transfer_learning()
 
 image_model = image_model.model
 image_model.load_weights("models/efficientnet.hdf5")
-
 image_model.trainable = False
-# for layer in image_model.layers:
-#     layer.trainable = False
-title_model = build_title_model(n_labels, "models/roberta.hdf5")
+
+title_model = build_title_model(n_labels)
+title_model.load_weights("models/roberta.hdf5")
+title_model.trainable = False
 
 model = concat_image_title_model(image_model, title_model, n_labels)
 

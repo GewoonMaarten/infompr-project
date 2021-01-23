@@ -5,7 +5,9 @@ from tensorflow.keras.layers import Dense, Dropout, Concatenate
 def concat_image_title_model(image_model, title_model, n_labels):
     # use detailed output layer
     image_model = Model(image_model.inputs, image_model.get_layer('image_dense_1024').output) 
+    image_model.trainable = False
     title_model = Model(title_model.inputs, title_model.get_layer('title_dense_1024').output)
+    title_model.trainable = False
     
     concatenate = Concatenate()([image_model.output, title_model.output])
     x = Dense(1024, activation = 'relu')(concatenate)

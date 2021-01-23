@@ -1,16 +1,19 @@
 import tensorflow as tf
-from transformers import TFRobertaForSequenceClassification, RobertaConfig
+from transformers import TFRobertaForSequenceClassification, TFBertForSequenceClassification
 from tensorflow.keras.layers import Input, Dense, Dropout, Lambda
 from tensorflow.keras.models import Model
 
 from utils.config import text_max_length
+from utils.config import text_use_bert
 
-def build_title_model(n_labels, path_to_weights=None):
+def build_title_model(n_labels):
     # config = RobertaConfig.from_pretrained("roberta-base")
     # config.hidden_size = 1024
     # config.num_attention_heads = 16
     # config.output_hidden_states = True
-    model = TFRobertaForSequenceClassification.from_pretrained("roberta-base", output_hidden_states = True)
+    model = TFBertForSequenceClassification.from_pretrained("bert-base-cased", output_hidden_states = True) if text_use_bert else \
+        TFRobertaForSequenceClassification.from_pretrained("roberta-base", output_hidden_states = True)
+    
     optimizer = tf.keras.optimizers.Adam(learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0)
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
@@ -37,11 +40,6 @@ def build_title_model(n_labels, path_to_weights=None):
     # # lambda
     # model.layers[2].trainable = False
 
-    # if path_to_weights:
-    #     model.load_weights(path_to_weights)
-    #     for layer in model.layers:
-    #         layer.trainable = False
-        
     model.compile(optimizer=optimizer, loss=loss, metrics=[metric])
 
     return model

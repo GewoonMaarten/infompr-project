@@ -19,6 +19,7 @@ training_epochs = config['epochs']
 training_batch_size = config['batch_size']
 
 text_max_length = config['text_config']['max_length']
+text_use_bert = config['text_config']['max_length'] == True
 
 img_width = config['img_config']['img_width']
 img_height = config['img_config']['img_height']

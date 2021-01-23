@@ -1,5 +1,5 @@
 import pandas as pd
-from transformers import RobertaTokenizer
+from transformers import RobertaTokenizer, BertTokenizer
 
 import tensorflow as tf
 import pandas as pd
@@ -9,7 +9,8 @@ from utils.config import (
     dataset_train_path,
     dataset_validate_path,
     training_batch_size,
-    text_max_length)
+    text_max_length,
+    text_use_bert)
 
 
 DF_PATHS = {
@@ -18,13 +19,13 @@ DF_PATHS = {
     'validate': dataset_validate_path
 }
 
-roberta_tokenizer = RobertaTokenizer.from_pretrained("roberta-base")
+tokenizer = BertTokenizer.from_pretrained("bert-base-cased") if text_use_bert else RobertaTokenizer.from_pretrained("roberta-base") 
 
 
 def convert_example_to_feature(review):
     # combine step for tokenization, WordPiece vector mapping and will
     # add also special tokens and truncate reviews longer than our max length
-    return roberta_tokenizer.encode_plus(review,
+    return tokenizer.encode_plus(review,
                                          # add [CLS], [SEP]
                                          add_special_tokens=True,
                                          max_length=text_max_length,  # max length of the text that can go to RoBERTa
