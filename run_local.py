@@ -14,7 +14,7 @@ if __name__ == "__main__":
     if args.trainer == 'image':
         import trainers.efficientnet
     elif args.trainer == 'text':
-        import trainers.bert_roberta
+        import trainers.title
     elif args.trainer == 'dual':
         import trainers.dual
     else:
