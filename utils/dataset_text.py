@@ -19,44 +19,55 @@ DF_PATHS = {
     'validate': dataset_validate_path
 }
 
-tokenizer = BertTokenizer.from_pretrained("bert-base-cased") if text_use_bert else RobertaTokenizer.from_pretrained("roberta-base") 
+tokenizer = BertTokenizer.from_pretrained("bert-base-cased") \
+    if text_use_bert \
+    else RobertaTokenizer.from_pretrained("roberta-base")
 
 
-def convert_example_to_feature(review):
-    # combine step for tokenization, WordPiece vector mapping and will
-    # add also special tokens and truncate reviews longer than our max length
-    return tokenizer.encode_plus(review,
-                                         # add [CLS], [SEP]
-                                         add_special_tokens=True,
-                                         max_length=text_max_length,  # max length of the text that can go to RoBERTa
-                                         # add [PAD] tokens at the end of sentence
-                                         pad_to_max_length=True,
-                                         return_attention_mask=True,  # add attention mask to not focus on pad tokens
-                                         )
+def __convert_example_to_feature(txt):
+    txt = txt.numpy().decode('utf-8')
+    encodings = tokenizer.encode_plus(txt,
+                                      add_special_tokens=True,
+                                      max_length=text_max_length,
+                                      padding='max_length',
+                                      truncation=True,
+                                      return_attention_mask=True)
+    return encodings['input_ids'], encodings['attention_mask']
 
 
-class DatasetText(tf.data.Dataset):
-    def _generator(mode):
-        try:
-            df_path = DF_PATHS[mode.decode('utf-8')]
-        except KeyError:
-            raise KeyError(
-                f'mode can only be "train", "test" or "validate", '
-                f'actual value: {mode}')
+def __map_example_to_dict(input_ids, attention_masks, label):
+    return {"input_ids": input_ids, "attention_mask": attention_masks}, label
 
-        df = pd.read_csv(df_path, sep='\t', header=0)
-        for _, r in df.iterrows():
-            title = convert_example_to_feature(r.clean_title)['input_ids']
 
-            yield \
-                title, \
-                tf.cast(r['2_way_label'], tf.float32)
+def __encode_examples(x, y):
+    x = tf.py_function(__convert_example_to_feature,
+                       [x], 
+                       (tf.uint32, tf.uint32))
+    return tf.data.Dataset.from_tensors((x[0], x[1], y))
 
-    def __new__(cls, mode):
-        return tf.data.Dataset.from_generator(
-            cls._generator,
-            output_signature=(
-                tf.TensorSpec(shape=(text_max_length,), dtype=tf.uint32),
-                tf.TensorSpec(shape=(), dtype=tf.float32)),
-            args=(tf.constant(mode, dtype=tf.string),)
-        )
+
+def __load_base_data(mode):
+    try:
+        df_path = DF_PATHS[mode]
+    except KeyError:
+        raise KeyError(
+            f'mode can only be "train", "test" or "validate", '
+            f'actual value: {mode}')
+
+    df = pd.read_csv(df_path, sep='\t', header=0)
+    labels = tf.cast(df['2_way_label'].values, tf.float32)
+    return tf.data.Dataset.from_tensor_slices((df['clean_title'].values, labels))
+
+
+def text_dataset(mode):
+    return __load_base_data(mode) \
+        .shuffle(buffer_size=50000, reshuffle_each_iteration=True) \
+        .interleave(
+            __encode_examples,
+            num_parallel_calls=tf.data.AUTOTUNE,
+            cycle_length=tf.data.AUTOTUNE,
+            deterministic=False) \
+        .batch(training_batch_size, drop_remainder=True) \
+        .map(__map_example_to_dict) \
+        .cache() \
+        .prefetch(buffer_size=tf.data.AUTOTUNE)

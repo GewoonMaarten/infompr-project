@@ -15,7 +15,7 @@ def concat_image_title_model(image_model, title_model, n_labels):
     output = Dense(n_labels, activation='softmax')(x)
     model = Model(inputs=[image_model.input, title_model.input], outputs=output, name = 'concat')
 
-    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-2)
+    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
 

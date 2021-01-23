@@ -67,7 +67,7 @@ class ModelBuilder():
     def compile_for_fine_tuning(self):
         self.base_model.trainable = True
         # We unfreeze the top 20 layers while leaving BatchNorm layers frozen
-        for layer in self.model.layers:
+        for layer in self.model.layers[-20:]:
             if not isinstance(layer, layers.BatchNormalization):
                 layer.trainable = True
 
@@ -87,7 +87,7 @@ class ModelBuilder():
 
         input_tensor = layers.Input(shape=(img_width, img_height, 3))
         self.base_model = model(input_tensor=input_tensor,
-                                weights=str(weights_path),
+                                weights='imagenet',
                                 include_top=False)
 
         x = self.base_model.output

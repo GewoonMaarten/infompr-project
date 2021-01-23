@@ -25,10 +25,10 @@ def build_title_model(n_labels):
     # # Keep [CLS] token encoding
     # # output = tf.squeeze(output[:, 0, :], axis=1)
 
-    output = Lambda(lambda seq: seq[:, 0, :], name = 'title_dense_1024')(output)
+    output = Lambda(lambda seq: seq[:, 0, :])(output)
     # output = Dense(1024, activation='relu', name='title_dense_1024')(output)
     output = Dropout(0.5, name = 'title_dropout')(output) 
-    output = Dense(n_labels, activation="softmax", name = 'title_softmax')(output)
+    output = Dense(n_labels, activation="softmax", name = 'title_dense_1024')(output)
 
     model = Model(inputs=input, outputs=output, name='title_model')
     # model.build(input_shape=(None, text_max_length))
