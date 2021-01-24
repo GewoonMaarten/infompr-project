@@ -19,4 +19,4 @@ score = model.evaluate(test_seq)
 
 print(f'Test loss: {score}')
 
-model.save_weights("models/Text_BERT_10K_V3.hdf5")
+model.save_weights("models/Text_roBERTa_10K_V2.hdf5")

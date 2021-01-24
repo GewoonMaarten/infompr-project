@@ -1,6 +1,4 @@
-import pandas as pd
 from transformers import RobertaTokenizer, BertTokenizer
-
 import tensorflow as tf
 import pandas as pd
 
@@ -11,9 +9,9 @@ from utils.config import (
     dataset_images_path,
     img_height,
     img_width,
+    training_batch_size,
     text_max_length,
     text_use_bert)
-
 
 DF_PATHS = {
     'train': dataset_train_path,
@@ -21,50 +19,73 @@ DF_PATHS = {
     'validate': dataset_validate_path
 }
 
-tokenizer = BertTokenizer.from_pretrained("bert-base-cased") if text_use_bert else RobertaTokenizer.from_pretrained("roberta-base") 
+tokenizer = BertTokenizer.from_pretrained("bert-base-cased") \
+    if text_use_bert \
+    else RobertaTokenizer.from_pretrained("roberta-base")
 
-def convert_example_to_feature(review):
-    # combine step for tokenization, WordPiece vector mapping and will
-    # add also special tokens and truncate reviews longer than our max length
-    return tokenizer.encode_plus(review,
-                                         # add [CLS], [SEP]
-                                         add_special_tokens=True,
-                                         max_length=text_max_length,  # max length of the text that can go to RoBERTa
-                                         # add [PAD] tokens at the end of sentence
-                                         pad_to_max_length=True,
-                                         return_attention_mask=True,  # add attention mask to not focus on pad tokens
-                                         )
+def __load_base_data(mode):
+    try:
+        df_path = DF_PATHS[mode]
+    except KeyError:
+        raise KeyError(
+            f'mode can only be "train", "test" or "validate", '
+            f'actual value: {mode}')
+    
+    df = pd.read_csv(df_path, sep='\t', header=0)
 
-class DatasetDual(tf.data.Dataset):
-    def _generator(mode):
-        try:
-            df_path = DF_PATHS[mode.decode('utf-8')]
-        except KeyError:
-            raise KeyError(
-                f'mode can only be "train", "test" or "validate", '
-                f'actual value: {mode}')
+    labels = tf.cast(df['2_way_label'].values, tf.float32)
+    paths = df['id'].apply(lambda x: dataset_images_path + x + '.jpg')
 
-        df = pd.read_csv(df_path, sep='\t', header=0)
-        for _, r in df.iterrows():
-            img_path = dataset_images_path + f'{r.id}.jpg'
-            img = tf.io.read_file(img_path)
-            img = tf.image.decode_jpeg(img, channels=3)
-            img = tf.image.resize(img, [img_height, img_width])
-            img = tf.cast(img, tf.float32)
-            img = tf.keras.applications.efficientnet.preprocess_input(img)
+    return tf.data.Dataset.from_tensor_slices(
+        (paths.values, df['clean_title'].values, labels))
 
-            title = convert_example_to_feature(r.clean_title)['input_ids']
+def __convert_example_to_feature(txt):
+    txt = txt.numpy().decode('utf-8')
+    encodings = tokenizer.encode_plus(txt,
+                                      add_special_tokens=True,
+                                      max_length=text_max_length,
+                                      padding='max_length',
+                                      truncation=True,
+                                      return_attention_mask=True)
+    return encodings['input_ids'], encodings['attention_mask']
 
-            yield \
-                (img, title), \
-                tf.cast(r['2_way_label'], tf.float32)
 
-    def __new__(cls, mode):
-        return tf.data.Dataset.from_generator(
-            cls._generator,
-            output_signature=(
-                (tf.TensorSpec(shape=(img_height, img_width, 3), dtype=tf.float32),
-                 tf.TensorSpec(shape=(text_max_length,), dtype=tf.uint32)),
-                tf.TensorSpec(shape=(), dtype=tf.float32)),
-            args=(tf.constant(mode, dtype=tf.string),)
-        )
+def __encode_examples(img, title, label):
+    x0, x1 = tf.py_function(__convert_example_to_feature,
+                            [title],
+                            (tf.int32, tf.int32))
+    return img, (x0, x1), label
+
+
+def __load_image(img_path, title, label):
+    img = tf.io.read_file(img_path)
+    img = tf.image.decode_jpeg(img, channels=3)
+    img = tf.image.resize(img, [img_height, img_width])
+
+    return tf.data.Dataset.from_tensors((img, title, label))
+
+def __preprocess_image(img, title, label):
+    img = tf.cast(img, tf.float32)
+    img = tf.keras.applications.efficientnet.preprocess_input(img)
+
+    return (img, title), label
+
+def dual_dataset(mode):
+    return __load_base_data(mode) \
+        .shuffle(buffer_size=50000, reshuffle_each_iteration=True) \
+        .interleave(
+            __load_image, 
+            num_parallel_calls=tf.data.AUTOTUNE, 
+            cycle_length=tf.data.AUTOTUNE,
+            deterministic=False) \
+        .map(
+            __encode_examples,
+            num_parallel_calls=tf.data.AUTOTUNE,
+            deterministic=False) \
+        .batch(training_batch_size, drop_remainder=True) \
+        .map(
+            __preprocess_image, 
+            num_parallel_calls=tf.data.AUTOTUNE, 
+            deterministic=False) \
+        .cache() \
+        .prefetch(buffer_size=tf.data.AUTOTUNE)

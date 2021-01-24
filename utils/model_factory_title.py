@@ -22,8 +22,8 @@ def build_title_model(n_labels):
     embedding_layer = transformer_model(input_ids_in, attention_mask=input_masks_in)[0]
     x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(50, return_sequences=True, dropout=0.1))(embedding_layer)
     x = tf.keras.layers.GlobalMaxPool1D()(x)
-    x = tf.keras.layers.Dense(50, activation='relu')(x)
-    x = tf.keras.layers.Dropout(0.2, name='title_dense_1024')(x)
+    x = tf.keras.layers.Dense(50, activation='relu', name='title_dense_1024')(x)
+    x = tf.keras.layers.Dropout(0.2)(x)
     predictions = tf.keras.layers.Dense(2, activation='sigmoid')(x)
 
     model = tf.keras.Model(inputs=[input_ids_in, input_masks_in], outputs=predictions)
