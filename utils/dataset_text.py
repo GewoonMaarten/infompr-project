@@ -35,15 +35,11 @@ def __convert_example_to_feature(txt):
     return encodings['input_ids'], encodings['attention_mask']
 
 
-def __map_example_to_dict(input_ids, attention_masks, label):
-    return {"input_ids": input_ids, "attention_mask": attention_masks}, label
-
-
 def __encode_examples(x, y):
-    x = tf.py_function(__convert_example_to_feature,
-                       [x], 
-                       (tf.uint32, tf.uint32))
-    return tf.data.Dataset.from_tensors((x[0], x[1], y))
+    x0, x1 = tf.py_function(__convert_example_to_feature,
+                            [x],
+                            (tf.int32, tf.int32))
+    return (x0, x1), y
 
 
 def __load_base_data(mode):
@@ -55,19 +51,17 @@ def __load_base_data(mode):
             f'actual value: {mode}')
 
     df = pd.read_csv(df_path, sep='\t', header=0)
-    labels = tf.cast(df['2_way_label'].values, tf.float32)
+    labels = tf.keras.utils.to_categorical(df['2_way_label'], num_classes=2)
     return tf.data.Dataset.from_tensor_slices((df['clean_title'].values, labels))
 
 
 def text_dataset(mode):
     return __load_base_data(mode) \
         .shuffle(buffer_size=50000, reshuffle_each_iteration=True) \
-        .interleave(
+        .map(
             __encode_examples,
             num_parallel_calls=tf.data.AUTOTUNE,
-            cycle_length=tf.data.AUTOTUNE,
             deterministic=False) \
         .batch(training_batch_size, drop_remainder=True) \
-        .map(__map_example_to_dict) \
         .cache() \
         .prefetch(buffer_size=tf.data.AUTOTUNE)

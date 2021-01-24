@@ -1,44 +1,39 @@
 import tensorflow as tf
-from transformers import TFRobertaForSequenceClassification, TFBertForSequenceClassification
-from tensorflow.keras.layers import Input, Dense, Dropout, Lambda
-from tensorflow.keras.models import Model
+from transformers import (
+    TFRobertaModel, 
+    TFBertModel,
+    RobertaConfig,
+    BertConfig)
 
-from utils.config import text_max_length
-from utils.config import text_use_bert
+from utils.config import text_max_length,text_use_bert
 
 def build_title_model(n_labels):
-    # config = RobertaConfig.from_pretrained("roberta-base")
-    # config.hidden_size = 1024
-    # config.num_attention_heads = 16
-    # config.output_hidden_states = True
-    model = TFBertForSequenceClassification.from_pretrained("bert-base-cased", output_hidden_states = True) if text_use_bert else \
-        TFRobertaForSequenceClassification.from_pretrained("roberta-base", output_hidden_states = True)
+
+    if text_use_bert:
+        config = BertConfig(output_hidden_states=True) # I dont know why config doesnt work
+        transformer_model = TFBertModel.from_pretrained("bert-base-cased")
+    else:
+        config = RobertaConfig(output_hidden_states=True)
+        transformer_model = TFRobertaModel.from_pretrained("roberta-base")
     
+    input_ids_in = tf.keras.layers.Input(shape=(text_max_length,), name='input_token', dtype=tf.int32)
+    input_masks_in = tf.keras.layers.Input(shape=(text_max_length,), name='masked_token', dtype=tf.int32)
+
+    embedding_layer = transformer_model(input_ids_in, attention_mask=input_masks_in)[0]
+    x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(50, return_sequences=True, dropout=0.1))(embedding_layer)
+    x = tf.keras.layers.GlobalMaxPool1D()(x)
+    x = tf.keras.layers.Dense(50, activation='relu')(x)
+    x = tf.keras.layers.Dropout(0.2, name='title_dense_1024')(x)
+    predictions = tf.keras.layers.Dense(2, activation='sigmoid')(x)
+
+    model = tf.keras.Model(inputs=[input_ids_in, input_masks_in], outputs=predictions)
+
+    for layer in model.layers[:3]:
+        layer.trainable = False
+
     optimizer = tf.keras.optimizers.Adam(learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0)
-    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
-
-    # see https://github.com/huggingface/transformers/issues/1350
-    input = Input(shape=(text_max_length,), name='input_ids', dtype='int32')
-    output = model(input)
-    output = output.hidden_states[12] # last hidden layer
-    # # Keep [CLS] token encoding
-    # # output = tf.squeeze(output[:, 0, :], axis=1)
-
-    output = Lambda(lambda seq: seq[:, 0, :])(output)
-    # output = Dense(1024, activation='relu', name='title_dense_1024')(output)
-    output = Dropout(0.5, name = 'title_dropout')(output) 
-    output = Dense(n_labels, activation="softmax", name = 'title_dense_1024')(output)
-
-    model = Model(inputs=input, outputs=output, name='title_model')
-    # model.build(input_shape=(None, text_max_length))
-
-    # # input
-    # model.layers[0].trainable = False
-    # # roberta
-    # model.layers[1].trainable = False
-    # # lambda
-    # model.layers[2].trainable = False
+    loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+    metric = tf.keras.metrics.CategoricalAccuracy('accuracy')
 
     model.compile(optimizer=optimizer, loss=loss, metrics=[metric])
 

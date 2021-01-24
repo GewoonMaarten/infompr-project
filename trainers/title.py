@@ -11,10 +11,12 @@ validate_seq = text_dataset('validate')
 
 model = build_title_model(n_labels)
 
+print(model.summary())
+
 callbacks = [tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3)]
 history = model.fit(train_seq, validation_data=validate_seq, epochs=training_epochs, callbacks=callbacks)
 score = model.evaluate(test_seq)
 
 print(f'Test loss: {score}')
 
-model.save_weights("models/roberta2.hdf5")
+model.save_weights("models/Text_BERT_10K_V3.hdf5")
