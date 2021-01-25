@@ -1,5 +1,6 @@
 from pathlib import Path
-
+import tensorflow_addons as tfa
+import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import (
     EfficientNetB0,
@@ -56,13 +57,19 @@ class ModelBuilder():
         self.model = None
         self.base_model = None
         self.__build_efficientnet(SIZES[size]['model'], SIZES[size]['weights'])
+        self.metrics = [
+            tf.keras.metrics.SparseCategoricalAccuracy('accuracy'),
+            tf.keras.metrics.Precision(),
+            tf.keras.metrics.Recall(),
+            tfa.metrics.F1Score(num_classes=2, average='macro')
+        ]
 
     def compile_for_transfer_learning(self):
         self.base_model.trainable = False
         optimizer = Adam(learning_rate=1e-2)
         self.model.compile(optimizer=optimizer,
                            loss='binary_crossentropy',
-                           metrics=['accuracy'])
+                           metrics=self.metrics)
 
     def compile_for_fine_tuning(self):
         self.base_model.trainable = True
@@ -74,7 +81,7 @@ class ModelBuilder():
         optimizer = Adam(learning_rate=1e-4)
         self.model.compile(optimizer=optimizer,
                            loss='binary_crossentropy',
-                           metrics=['accuracy'])
+                           metrics=self.metrics)
 
     def __build_efficientnet(self, model, weight_path):
         weights_path = Path(Path().absolute(),

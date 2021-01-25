@@ -1,13 +1,14 @@
 import tensorflow as tf
+import tensorflow_addons as tfa
 from transformers import (
     TFRobertaModel, 
     TFBertModel,
     RobertaConfig,
     BertConfig)
 
-from utils.config import text_max_length,text_use_bert
+from utils.config import text_max_length
 
-def build_title_model(n_labels):
+def build_title_model(n_labels, text_use_bert):
 
     if text_use_bert:
         config = BertConfig(output_hidden_states=True) # I dont know why config doesnt work
@@ -32,9 +33,14 @@ def build_title_model(n_labels):
         layer.trainable = False
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0)
-    loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
-    metric = tf.keras.metrics.CategoricalAccuracy('accuracy')
+    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    metrics = [
+        tf.keras.metrics.SparseCategoricalAccuracy('accuracy'),
+        tf.keras.metrics.Precision(),
+        tf.keras.metrics.Recall(),
+        tfa.metrics.F1Score(num_classes=2, average='macro')
+        ]
 
-    model.compile(optimizer=optimizer, loss=loss, metrics=[metric])
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     return model

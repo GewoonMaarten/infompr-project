@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow_addons as tfa
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Dropout, Concatenate
 
@@ -19,8 +20,13 @@ def concat_image_title_model(image_model, title_model, n_labels):
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
+    metrics = [
+        tf.keras.metrics.SparseCategoricalAccuracy('accuracy'),
+        tf.keras.metrics.Precision(),
+        tf.keras.metrics.Recall(),
+        tfa.metrics.F1Score(num_classes=2, average='macro')
+    ]
 
-    model.compile(optimizer=optimizer, loss=loss, metrics=[metric])
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     return model
