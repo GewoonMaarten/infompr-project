@@ -1,8 +1,9 @@
 import json
-
+from pathlib import Path
 config = None
 try:
-    with open('config.json', 'r') as f:
+    path = Path(Path(__file__).parent.parent.absolute(), 'config.json')
+    with open(path, 'r') as f:
         config = json.load(f)
 except IOError:
     print('config.json does not exist!')
