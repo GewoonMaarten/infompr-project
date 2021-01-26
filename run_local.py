@@ -1,4 +1,6 @@
 import argparse
+from pathlib import Path
+import json
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -10,6 +12,20 @@ if __name__ == "__main__":
         required=True,
         help='which dataset should be used to create the minidataset')
     args = parser.parse_args()
+
+    try:
+        path = Path('config.json')
+        with open(path, 'r') as f:
+            config = json.load(f)
+    except IOError:
+        print('config.json does not exist!')
+        print('View the README.md on how to create one.')
+        raise
+
+    print('config.json:')
+    print(json.dumps(config, indent = 3)) 
+    print('Check if the config is correct!')
+    input("Press Enter to continue...")
 
     if args.trainer == 'image':
         import trainers.efficientnet

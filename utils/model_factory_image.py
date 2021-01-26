@@ -58,10 +58,10 @@ class ModelBuilder():
         self.base_model = None
         self.__build_efficientnet(SIZES[size]['model'], SIZES[size]['weights'])
         self.metrics = [
-            tf.keras.metrics.SparseCategoricalAccuracy('accuracy'),
-            tf.keras.metrics.Precision(),
-            tf.keras.metrics.Recall(),
-            tfa.metrics.F1Score(num_classes=2, average='macro')
+            tf.keras.metrics.BinaryAccuracy('accuracy'),
+            tf.keras.metrics.Precision(name='precision'),
+            tf.keras.metrics.Recall(name='recall'),
+            tfa.metrics.F1Score(num_classes=2, average='macro', name='f1_score')
         ]
 
     def compile_for_transfer_learning(self):
@@ -84,7 +84,7 @@ class ModelBuilder():
                            metrics=self.metrics)
 
     def __build_efficientnet(self, model, weight_path):
-        weights_path = Path(Path().absolute(),
+        weights_path = Path(Path(__file__).parent.parent.absolute(),
                             'bin',
                             'noisy-student',
                             weight_path)

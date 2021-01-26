@@ -33,13 +33,12 @@ def build_title_model(n_labels, text_use_bert):
         layer.trainable = False
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0)
-    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
     metrics = [
-        tf.keras.metrics.SparseCategoricalAccuracy('accuracy'),
+        tf.keras.metrics.CategoricalAccuracy('accuracy'),
         tf.keras.metrics.Precision(),
         tf.keras.metrics.Recall(),
-        tfa.metrics.F1Score(num_classes=2, average='macro')
-        ]
+        tfa.metrics.F1Score(num_classes=2, average='macro')]
 
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 

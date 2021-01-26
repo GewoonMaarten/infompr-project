@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-config = None
+
 try:
     path = Path(Path(__file__).parent.parent.absolute(), 'config.json')
     with open(path, 'r') as f:

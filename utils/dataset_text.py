@@ -9,8 +9,7 @@ from utils.config import (
     dataset_train_path,
     dataset_validate_path,
     training_batch_size,
-    text_max_length,
-    text_use_bert)
+    text_max_length)
 
 
 DF_PATHS = {
@@ -18,10 +17,6 @@ DF_PATHS = {
     'test': dataset_test_path,
     'validate': dataset_validate_path
 }
-
-tokenizer = BertTokenizer.from_pretrained("bert-base-cased") \
-    if text_use_bert \
-    else RobertaTokenizer.from_pretrained("roberta-base")
 
 
 def __convert_example_to_feature(txt):
@@ -55,7 +50,12 @@ def __load_base_data(mode):
     return tf.data.Dataset.from_tensor_slices((df['clean_title'].values, labels))
 
 
-def text_dataset(mode):
+def text_dataset(mode, use_bert):
+    global tokenizer
+    tokenizer = BertTokenizer.from_pretrained("bert-base-cased") \
+        if use_bert \
+        else RobertaTokenizer.from_pretrained("roberta-base")
+
     return __load_base_data(mode) \
         .shuffle(buffer_size=50000, reshuffle_each_iteration=True) \
         .map(

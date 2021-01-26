@@ -46,16 +46,14 @@ def __preprocess_image(img, label):
 
 def image_dataset(mode):
     return __load_base_data(mode) \
-        .shuffle(buffer_size=50000, reshuffle_each_iteration=True) \
         .interleave(
             __load_image, 
             num_parallel_calls=tf.data.AUTOTUNE, 
             cycle_length=tf.data.AUTOTUNE,
-            deterministic=False) \
+            deterministic=True) \
         .batch(training_batch_size, drop_remainder=True) \
         .map(
             __preprocess_image, 
             num_parallel_calls=tf.data.AUTOTUNE, 
-            deterministic=False) \
-        .cache() \
+            deterministic=True) \
         .prefetch(buffer_size=tf.data.AUTOTUNE)

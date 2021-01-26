@@ -13,18 +13,16 @@ def concat_image_title_model(image_model, title_model, n_labels):
     concatenate = Concatenate()([image_model.output, title_model.output])
     x = Dense(1024, activation = 'relu')(concatenate)
     x = Dropout(0.4)(x)
-    output = Dense(2, activation='sigmoid')(x)
-    model = Model(inputs=[image_model.input, title_model.input], outputs=output, name = 'concat')
-
-    print(model.summary())
+    output = Dense(n_labels, activation='softmax')(x)
+    model = Model(inputs=[image_model.input, title_model.input], outputs=output, name='concat')
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
-    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
     metrics = [
-        tf.keras.metrics.SparseCategoricalAccuracy('accuracy'),
+        tf.keras.metrics.CategoricalAccuracy('accuracy'),
         tf.keras.metrics.Precision(),
         tf.keras.metrics.Recall(),
-        tfa.metrics.F1Score(num_classes=2, average='macro')
+        tfa.metrics.F1Score(num_classes=n_labels, average='macro')
     ]
 
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
