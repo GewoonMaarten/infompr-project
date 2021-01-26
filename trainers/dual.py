@@ -1,4 +1,4 @@
-from utils.dataset_dual import dual_dataset
+from utils.dataset_dual import DualDataset
 from utils.model_factory_title import build_title_model
 from utils.model_factory_image import ModelBuilder
 from utils.model_factory_dual import concat_image_title_model
@@ -11,9 +11,9 @@ image_model_name = 'EfficientNET_B3_10K_noisy_student_V2'
 text_model_name = 'Text_roBERTa_10K_V2'
 model_name = 'Dual_10K_roBERTa_EfficientNET_B3_noisy_student_V2'
 
-train_seq = dual_dataset('train', text_use_bert)
-test_seq = dual_dataset('test', text_use_bert)
-validate_seq = dual_dataset('validate', text_use_bert)
+train_seq = DualDataset('train', text_use_bert).dual_dataset()
+test_seq = DualDataset('test', text_use_bert).dual_dataset()
+validate_seq = DualDataset('validate', text_use_bert).dual_dataset()
 
 image_model = ModelBuilder('b3')
 image_model.compile_for_transfer_learning()
