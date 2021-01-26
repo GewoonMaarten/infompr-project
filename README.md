@@ -1,5 +1,16 @@
 # INFOMPR Project
 
+## Running the traing script
+
+```
+> python .\run_local.py --help        
+usage: run_local.py [-h] --trainer {dual,image,text}
+
+optional arguments:
+  -h, --help                  show this help message and exit
+  --trainer {dual,image,text} which model should be trained
+```
+
 ## Links
 * [Fakeddit Github](https://github.com/entitize/Fakeddit)
 
@@ -24,7 +35,8 @@ It needs to have the following structure (keys with the `_` prefix are optional)
   "epochs": 0,
   "batch_size": 0,
   "text_config": {
-    "max_length": 0
+    "max_length": 0,
+    "use_bert": true|false
   },
   "img_config": {
     "img_width": 0,
