@@ -44,6 +44,11 @@ def __preprocess_image(img, label):
 
     return img, label
 
+def image_dataset_basic(mode):
+    return __load_base_data(mode) \
+        .interleave(__load_image) \
+        .map(__preprocess_image)
+
 def image_dataset(mode):
     return __load_base_data(mode) \
         .interleave(

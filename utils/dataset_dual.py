@@ -73,6 +73,12 @@ class DualDataset():
 
         return (img, title), label
 
+    def dual_dataset_basic(self):
+        return self.__load_base_data() \
+            .interleave(self.__load_image) \
+            .map(self.__encode_examples) \
+            .map(self.__preprocess_image)
+
     def dual_dataset(self):
         return self.__load_base_data() \
             .shuffle(buffer_size=50000, reshuffle_each_iteration=True) \

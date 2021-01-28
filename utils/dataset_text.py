@@ -56,6 +56,10 @@ class TextDataset():
             df['2_way_label'], num_classes=2)
         return tf.data.Dataset.from_tensor_slices((df['clean_title'].values, labels))
 
+    def text_dataset_basic(self):
+        return self.__load_base_data() \
+            .map(self.__encode_examples)
+
     def text_dataset(self):
         return self.__load_base_data() \
             .shuffle(buffer_size=50000, reshuffle_each_iteration=True) \
