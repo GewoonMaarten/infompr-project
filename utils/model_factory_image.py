@@ -57,18 +57,19 @@ class ModelBuilder():
         self.model = None
         self.base_model = None
         self.__build_efficientnet(SIZES[size]['model'], SIZES[size]['weights'])
+        self.loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
         self.metrics = [
-            tf.keras.metrics.BinaryAccuracy('accuracy'),
+            tf.keras.metrics.BinaryAccuracy(name='accuracy'),
             tf.keras.metrics.Precision(name='precision'),
             tf.keras.metrics.Recall(name='recall'),
-            tfa.metrics.F1Score(num_classes=2, average='macro', name='f1_score')
+            tfa.metrics.F1Score(name='f1_score', num_classes=2, average='micro')
         ]
 
     def compile_for_transfer_learning(self):
         self.base_model.trainable = False
         optimizer = Adam(learning_rate=1e-2)
         self.model.compile(optimizer=optimizer,
-                           loss='binary_crossentropy',
+                           loss=self.loss,
                            metrics=self.metrics)
 
     def compile_for_fine_tuning(self):
@@ -80,7 +81,7 @@ class ModelBuilder():
 
         optimizer = Adam(learning_rate=1e-4)
         self.model.compile(optimizer=optimizer,
-                           loss='binary_crossentropy',
+                           loss=self.loss,
                            metrics=self.metrics)
 
     def __build_efficientnet(self, model, weight_path):

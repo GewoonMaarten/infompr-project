@@ -17,12 +17,12 @@ def concat_image_title_model(image_model, title_model, n_labels):
     model = Model(inputs=[image_model.input, title_model.input], outputs=output, name='concat')
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
-    loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+    loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     metrics = [
-        tf.keras.metrics.CategoricalAccuracy('accuracy'),
-        tf.keras.metrics.Precision(),
-        tf.keras.metrics.Recall(),
-        tfa.metrics.F1Score(num_classes=n_labels, average='macro')
+        tf.keras.metrics.BinaryAccuracy(name='accuracy'),
+        tf.keras.metrics.Precision(name='precision'),
+        tf.keras.metrics.Recall(name='recall'),
+        tfa.metrics.F1Score(name='f1_score', num_classes=2, average='micro')
     ]
 
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
